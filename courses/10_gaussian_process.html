@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<link href="../../../assets/media/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.37">
+
+  <meta name="author" content="Simone Rossi">
+  <title>Advanced Statistical Inference – Gaussian Processes</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../../../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../../../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../../../site_libs/revealjs/dist/theme/quarto-9a4cafec2c9d4c9d7f0a6a56aefe2a62.css">
+  <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-KWEG8R79VL"></script>
+
+  <script type="text/javascript">
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KWEG8R79VL', { 'anonymize_ip': true});
+  </script>
+  <link href="../../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../../../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script type="text/x-mathjax-config">
+  window.MathJax = {
+    loader: {load: ['[tex]/colorv2']},
+    tex: {packages: {'[+]': ['color']}}
+  };
+  </script>
+<meta property="og:title" content="Gaussian Processes – Advanced Statistical Inference">
+<meta property="og:description" content="Advanced Statistical Inference">
+<meta property="og:site_name" content="Advanced Statistical Inference">
+<meta name="twitter:title" content="Gaussian Processes – Advanced Statistical Inference">
+<meta name="twitter:description" content="Advanced Statistical Inference">
+<meta name="twitter:creator" content="@<twitter-handle>">
+<meta name="twitter:site" content="\@<twitter-handle>">
+<meta name="twitter:card" content="summary">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" data-background-color="#1c4587" class="quarto-title-block center">
+  <h1 class="title">Gaussian Processes</h1>
+  <p class="subtitle">Advanced Statistical Inference</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Simone Rossi 
+</div>
+        <p class="quarto-title-affiliation">
+            EURECOM
+          </p>
+    </div>
+</div>
+
+</section>
+<section class="slide level2">
+
+<p><span class="math display">\[
+\require{physics}
+\definecolor{input}{rgb}{0.42, 0.55, 0.74}
+\definecolor{params}{rgb}{0.51,0.70,0.40}
+\definecolor{output}{rgb}{0.843, 0.608, 0}
+\definecolor{vparams}{rgb}{0.58, 0, 0.83}
+\definecolor{noise}{rgb}{0.0, 0.48, 0.65}
+\definecolor{latent}{rgb}{0.8, 0.0, 0.8}
+\definecolor{function}{rgb}{0.75, 0.75, 0.12}
+\]</span></p>
+</section>
+<section id="where-are-we" class="slide level2">
+<h2>Where are we?</h2>
+<p>We have seen:</p>
+<ol type="1">
+<li>Bayesian linear regression</li>
+<li>Approximate inference
+<ul>
+<li>Markov chain Monte Carlo</li>
+<li>Variational inference</li>
+<li>Laplace approximation</li>
+</ul></li>
+<li>Bayesian logistic regression (for classification)</li>
+<li><strong>Today</strong>: Gaussian processes</li>
+</ol>
+</section>
+<section id="introduction" class="slide level2">
+<h2>Introduction</h2>
+<ul>
+<li><p>Gaussian processes (GPs) are a flexible and powerful tool for regression (and classification).</p></li>
+<li><p>Linear models require us to specify a set of basis functions and their coefficients.</p>
+<ul>
+<li>Polynomials? Trigonometric functions? etc?</li>
+</ul></li>
+<li><p>Can we use Bayesian inference to let the data decide?</p></li>
+<li><p>Gaussian processes work implicitly with an infinite-dimensional set of basis functions and learn a probabilistic combination of them.</p></li>
+</ul>
+</section>
+<section id="gaussian-processes-gps" class="slide level2">
+<h2>Gaussian Processes (GPs)</h2>
+<p>Gaussian processes can be explained in two ways:</p>
+<ul>
+<li><strong>Weight-space view</strong>:
+<ul>
+<li>Understand GPs as a Bayesian linear regression model with <em>implicit</em> basis functions.</li>
+<li>Since the basis functions are implicit, we can even work with <strong>infinite-dimensional</strong> feature spaces.</li>
+</ul></li>
+<li><strong>Function-space view</strong>:
+<ul>
+<li>Understand GPs as a distribution over functions.</li>
+<li>There are no parameters in this view, only functions, so we can <em>implicitly</em> work with infinite-dimensional parameter spaces.</li>
+</ul></li>
+</ul>
+</section>
+<section>
+<section id="function-space-view-of-gaussian-processes" class="title-slide slide level1 center">
+<h1>Function-space view of Gaussian Processes</h1>
+
+</section>
+<section id="section" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/gaussian_2d?embed=True" width="1920" height="800" frameborder="0">
+</iframe>
+<p><span class="math display">\[
+p({\textcolor{input}{\boldsymbol{x}}}) = \mathcal{N}({\textcolor{input}{\boldsymbol{x}}}; {\boldsymbol{\mu}}, {\boldsymbol{\Sigma}}) = \frac{1}{(2 \pi)^{D/2} |{\boldsymbol{\Sigma}}|^{1/2}} \exp \left( -\frac{1}{2} ({\textcolor{input}{\boldsymbol{x}}}- {\boldsymbol{\mu}})^\top {\boldsymbol{\Sigma}}^{-1} ({\textcolor{input}{\boldsymbol{x}}}- {\boldsymbol{\mu}}) \right)
+\]</span></p>
+</section>
+<section id="why-use-gaussian" class="slide level2">
+<h2>Why use Gaussian?</h2>
+<p>Gaussian <strong>distribution</strong> have several nice properties that make them attractive:</p>
+<ul>
+<li>Sums of Gaussians are Gaussian.</li>
+<li>Marginals of multivariate Gaussians are Gaussian.</li>
+<li>Conditionals of Gaussians are Gaussian.</li>
+</ul>
+</section>
+<section id="conditioning-a-gaussian-distribution" class="slide level2">
+<h2>Conditioning a Gaussian distribution</h2>
+<p><span class="math display">\[
+{\textcolor{latent}{\boldsymbol{f}}}= \begin{bmatrix} {\textcolor{latent}{\boldsymbol{f}}}_1 \\ {\textcolor{latent}{\boldsymbol{f}}}_2 \end{bmatrix} \sim {\mathcal{N}}\left(\begin{bmatrix} {\boldsymbol{\mu}}_1 \\ {\boldsymbol{\mu}}_2 \end{bmatrix}, \begin{bmatrix} {\boldsymbol{\Sigma}}_{11} &amp; {\boldsymbol{\Sigma}}_{12} \\ {\boldsymbol{\Sigma}}_{21} &amp; {\boldsymbol{\Sigma}}_{22} \end{bmatrix}\right)
+\]</span></p>
+<p>Then</p>
+<p><span class="math display">\[
+p({\textcolor{latent}{\boldsymbol{f}}}_2\mid{\textcolor{latent}{\boldsymbol{f}}}_1) = {\mathcal{N}}({\boldsymbol{\mu}}_2 + {\boldsymbol{\Sigma}}_{21}{\boldsymbol{\Sigma}}_{11}^{-1}({\textcolor{latent}{\boldsymbol{f}}}_1 - {\boldsymbol{\mu}}_1), {\boldsymbol{\Sigma}}_{22} - {\boldsymbol{\Sigma}}_{21}{\boldsymbol{\Sigma}}_{11}^{-1}{\boldsymbol{\Sigma}}_{12})
+\]</span></p>
+<p>which simplifies if <span class="math inline">\({\boldsymbol{\mu}}_1, {\boldsymbol{\mu}}_2 = {\boldsymbol{0}}\)</span>,</p>
+<p><span class="math display">\[
+p({\textcolor{latent}{\boldsymbol{f}}}_2\mid{\textcolor{latent}{\boldsymbol{f}}}_1) = {\mathcal{N}}({\boldsymbol{\Sigma}}_{21}{\boldsymbol{\Sigma}}_{11}^{-1}{\textcolor{latent}{\boldsymbol{f}}}_1, {\boldsymbol{\Sigma}}_{22} - {\boldsymbol{\Sigma}}_{21}{\boldsymbol{\Sigma}}_{11}^{-1}{\boldsymbol{\Sigma}}_{12})
+\]</span></p>
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p>This is sometimes referred to as the <strong>Bayes’ rule for Gaussian distributions</strong>.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="section-1" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/conditioning_marginalization?embed=True" width="1920" height="1000" frameborder="0">
+</iframe>
+</section>
+<section id="section-2" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/multivariate_gaussian?embed=True" width="1920" height="800" frameborder="0">
+</iframe>
+</section>
+<section id="gaussian-processes-as-a-distribution-over-functions" class="slide level2">
+<h2>Gaussian Processes as a distribution over functions</h2>
+<ul>
+<li><p>We can think of a Gaussian process as an infinite-dimensional generalization of a multivariate Gaussian distribution.</p></li>
+<li><p>… or as an infinite-dimensional distribution over functions.</p></li>
+<li><p>All we need to do is to change indexes</p></li>
+</ul>
+</section>
+<section id="stochastic-processes" class="slide level2">
+<h2>Stochastic processes</h2>
+<p>A stochastic process is a collection of random variables indexed by some variable <span class="math inline">\(\textcolor{input}{x}\in {\mathcal{X}}\)</span>.</p>
+<p><span class="math display">\[
+\{\textcolor{latent}{f}(\textcolor{input}{x}) : \textcolor{input}{x}\in {\mathcal{X}}\}
+\]</span></p>
+<p>Usually <span class="math inline">\(\textcolor{latent}{f}(\textcolor{input}{x}) \in {\mathbb{R}}\)</span> and <span class="math inline">\({\mathcal{X}}= {\mathbb{R}}^D\)</span>. So, <span class="math inline">\(\textcolor{latent}{f}: {\mathbb{R}}^D \to {\mathbb{R}}\)</span>.</p>
+<div class="fragment">
+<p>For a set of inputs <span class="math inline">\({\textcolor{input}{\boldsymbol{X}}}= \{\textcolor{input}{x}_1, \ldots, \textcolor{input}{x}_N\}\)</span>, the corresponding random variables <span class="math inline">\(\{\textcolor{latent}{f}_1, \ldots, \textcolor{latent}{f}_N\}\)</span> with <span class="math inline">\(\textcolor{latent}{f}_i = \textcolor{latent}{f}(\textcolor{input}{x}_i)\)</span> have a joint distribution <span class="math inline">\(p(\textcolor{latent}{f}(\textcolor{input}{x}_1), \ldots, \textcolor{latent}{f}(\textcolor{input}{x}_N))\)</span>.</p>
+</div>
+<div class="fragment">
+<p>A <strong>Gaussian process</strong> is a stochastic process such that any finite subset of the random variables has a joint Gaussian distribution.</p>
+<p><span class="math display">\[
+(\textcolor{latent}{f}(\textcolor{input}{x}_1), \ldots, \textcolor{latent}{f}(\textcolor{input}{x}_N)) \sim {\mathcal{N}}({\boldsymbol{\mu}}, {\boldsymbol{\Sigma}})
+\]</span></p>
+<p>We write <span class="math inline">\(\textcolor{latent}{f}\sim \mathcal{GP}\)</span> to denote that <span class="math inline">\(\textcolor{latent}{f}\)</span> is a Gaussian process.</p>
+</div>
+</section>
+<section id="gaussian-processes-mean-and-covariance-functions" class="slide level2">
+<h2>Gaussian Processes: mean and covariance functions</h2>
+<p>To specify a Gaussian distribution, we need to define a mean vector <span class="math inline">\({\boldsymbol{\mu}}\)</span> and a covariance matrix <span class="math inline">\({\boldsymbol{\Sigma}}\)</span>.</p>
+<p><span class="math display">\[
+{\boldsymbol{a}}\sim {\mathcal{N}}({\boldsymbol{\mu}}, {\boldsymbol{\Sigma}})
+\]</span></p>
+<p>To specify a Gaussian process, we need to define a mean <strong>function</strong> <span class="math inline">\(\mu(\textcolor{input}{x})\)</span> and a covariance <strong>function</strong> <span class="math inline">\(k(\textcolor{input}{x}, \textcolor{input}{x}^\prime)\)</span>.</p>
+<p><span class="math display">\[
+f \sim \mathcal{GP}(\mu(\cdot), k(\cdot, \cdot))
+\]</span></p>
+<ul>
+<li>The mean function <span class="math inline">\(\mu(\textcolor{input}{x}) = {\mathbb{E}}[f(\textcolor{input}{x})]\)</span>.</li>
+<li>The covariance function <span class="math inline">\(k(\textcolor{input}{x}, \textcolor{input}{x}^\prime) = {\mathbb{E}}[(f(\textcolor{input}{x}) - \mu(\textcolor{input}{x}))(f(\textcolor{input}{x}^\prime) - \mu(\textcolor{input}{x}^\prime))]\)</span>.</li>
+</ul>
+</section>
+<section id="section-3" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/gp_joint_distribution?embed=True" width="1920" height="700" frameborder="0">
+</iframe>
+<p>Take two points <span class="math inline">\(\textcolor{input}{x}_0\)</span> and <span class="math inline">\(\textcolor{input}{x}_1\)</span>, their function values <span class="math inline">\(\textcolor{latent}{f}_0 = f(\textcolor{input}{x}_0)\)</span> and <span class="math inline">\(\textcolor{latent}{f}_1 = f(\textcolor{input}{x}_1)\)</span> are jointly Gaussian distributed with <span class="math inline">\(p(\textcolor{latent}{f}_0, \textcolor{latent}{f}_1)\)</span>.</p>
+</section>
+<section id="mean-function" class="slide level2">
+<h2>Mean function</h2>
+<p>We are free to choose the mean and the covariance functions however we like, subject to some constraints.</p>
+<ul>
+<li><p>The mean function can be used to encode prior knowledge about the mean of the function we are trying to model.</p></li>
+<li><p>The mean function <span class="math inline">\(\mu({\textcolor{input}{\boldsymbol{x}}})\)</span> is often set to zero or constant.</p></li>
+</ul>
+</section>
+<section id="covariance-function" class="slide level2">
+<h2>Covariance function</h2>
+<p>The covariance function <span class="math inline">\(k({\textcolor{input}{\boldsymbol{x}}}, {\textcolor{input}{\boldsymbol{x}}}^\prime)\)</span> is also known as the kernel function.</p>
+<p>The covariance function encodes our prior beliefs about the <strong>family of functions</strong> we are trying to model.</p>
+<div class="fragment">
+<p><strong>Requirements</strong> for a valid covariance function:</p>
+<ul>
+<li><span class="math inline">\(k\)</span> must be a positive semi-definite function.</li>
+<li>Given locations <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}_1, \ldots, {\textcolor{input}{\boldsymbol{x}}}_N\)</span>, the covariance matrix <span class="math inline">\({\boldsymbol{K}}\)</span> with entries <span class="math inline">\(k_{ij} = k({\textcolor{input}{\boldsymbol{x}}}_i, {\textcolor{input}{\boldsymbol{x}}}_j)\)</span> must be positive semi-definite.</li>
+</ul>
+<p>We often assume <span class="math inline">\(k\)</span> is a function of the difference between the inputs: <span class="math inline">\(k({\textcolor{input}{\boldsymbol{x}}}, {\textcolor{input}{\boldsymbol{x}}}^\prime) = k({\textcolor{input}{\boldsymbol{x}}}- {\textcolor{input}{\boldsymbol{x}}}^\prime)\)</span>, which is known as a <strong>stationary kernel</strong>.</p>
+</div>
+</section>
+<section id="squared-exponential-kernel" class="slide level2">
+<h2>Squared Exponential Kernel</h2>
+<p>RBF kernel or squared exponential kernel:</p>
+<p><span class="math display">\[
+k({\textcolor{input}{\boldsymbol{x}}}, {\textcolor{input}{\boldsymbol{x}}}^\prime) = \textcolor{vparams}\alpha \exp\left(-\frac{1}{2\textcolor{vparams}\lambda^2}({\textcolor{input}{\boldsymbol{x}}}- {\textcolor{input}{\boldsymbol{x}}}^\prime)^\top({\textcolor{input}{\boldsymbol{x}}}- {\textcolor{input}{\boldsymbol{x}}}^\prime)\right) = \textcolor{vparams}\alpha \exp\left(-\frac{1}{2\textcolor{vparams}\lambda^2}\norm{{\textcolor{input}{\boldsymbol{x}}}- {\textcolor{input}{\boldsymbol{x}}}^\prime}^2\right)
+\]</span></p>
+<p>Defines smooth functions, where the function values are highly correlated for nearby inputs.</p>
+<p>Hyperparameters:</p>
+<ul>
+<li><span class="math inline">\(\textcolor{vparams}\alpha\)</span> is the amplitude</li>
+<li><span class="math inline">\(\textcolor{vparams}\lambda\)</span> is the length scale</li>
+</ul>
+</section>
+<section id="section-4" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/kernels?embed=True" width="1920" height="1000" frameborder="0">
+</iframe>
+</section>
+<section id="predictions-with-gaussian-processes" class="slide level2">
+<h2>Predictions with Gaussian Processes</h2>
+<p>Given a set of training inputs <span class="math inline">\({\textcolor{input}{\boldsymbol{X}}}=\{{\textcolor{input}{\boldsymbol{x}}}_1, \ldots, {\textcolor{input}{\boldsymbol{x}}}_N\}\)</span> and outputs <span class="math inline">\({\textcolor{latent}{\boldsymbol{f}}}=\{\textcolor{latent}{f}_1, \ldots, \textcolor{latent}{f}_N\}\)</span>, we want to make predictions for a new input <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}_\star\)</span>.</p>
+<p>The joint distribution of the training outputs <span class="math inline">\({\textcolor{latent}{\boldsymbol{f}}}\)</span> and the test output <span class="math inline">\(\textcolor{latent}{f}_\star\)</span> is Gaussian:</p>
+<p><span class="math display">\[
+\begin{bmatrix} {\textcolor{latent}{\boldsymbol{f}}}\\ \textcolor{latent}{f}_\star \end{bmatrix} \sim {\mathcal{N}}\left({\boldsymbol{0}}, \begin{bmatrix} {\boldsymbol{K}}&amp; {\boldsymbol{k}}_\star \\ {\boldsymbol{k}}_\star^\top &amp; k_{\star\star} \end{bmatrix}\right)
+\]</span></p>
+<p>where <span class="math inline">\({\boldsymbol{K}}=k({\textcolor{input}{\boldsymbol{X}}}, {\textcolor{input}{\boldsymbol{X}}})\)</span>, <span class="math inline">\({\boldsymbol{k}}_\star=k({\textcolor{input}{\boldsymbol{X}}}, {\textcolor{input}{\boldsymbol{x}}}_\star)\)</span>, and <span class="math inline">\(k_{\star\star}=k({\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{input}{\boldsymbol{x}}}_\star)\)</span>.</p>
+<div class="fragment">
+<p>Because of the Gaussian conditioning property, the distribution of <span class="math inline">\(\textcolor{latent}{f}_\star\)</span> given <span class="math inline">\({\textcolor{latent}{\boldsymbol{f}}}\)</span> is also Gaussian:</p>
+<p><span class="math display">\[
+\textcolor{latent}{f}_\star \mid {\textcolor{latent}{\boldsymbol{f}}}\sim {\mathcal{N}}({\boldsymbol{k}}_\star^\top{\boldsymbol{K}}^{-1}{\textcolor{latent}{\boldsymbol{f}}}, k_{\star\star} - {\boldsymbol{k}}_\star^\top{\boldsymbol{K}}^{-1}{\boldsymbol{k}}_\star)
+\]</span></p>
+</div>
+</section>
+<section id="section-5" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/gp_regression?embed=True" width="1920" height="1000" frameborder="0">
+</iframe>
+</section>
+<section id="predictions-with-gaussian-processes-1" class="slide level2">
+<h2>Predictions with Gaussian Processes</h2>
+<p><span class="math display">\[
+\textcolor{latent}{f}_\star \mid {\textcolor{latent}{\boldsymbol{f}}}\sim {\mathcal{N}}({\boldsymbol{k}}_\star^\top{\boldsymbol{K}}^{-1}{\textcolor{latent}{\boldsymbol{f}}}, k_{\star\star} - {\boldsymbol{k}}_\star^\top{\boldsymbol{K}}^{-1}{\boldsymbol{k}}_\star)
+\]</span></p>
+<p>Assumes that the training outputs <span class="math inline">\({\textcolor{latent}{\boldsymbol{f}}}\)</span> are noise-free. <em>This is not the assumption we made previously</em>.</p>
+<p>In general, we model the noise in the outputs as: <span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{latent}{\boldsymbol{f}}}) = {\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{latent}{\boldsymbol{f}}}, \sigma^2{\boldsymbol{I}})
+\]</span></p>
+</section>
+<section id="predictions-with-gaussian-processes-with-noise" class="slide level2">
+<h2>Predictions with Gaussian Processes with noise</h2>
+<p>The joint distribution of the training outputs <span class="math inline">\({\textcolor{output}{\boldsymbol{y}}}\)</span> and the test output <span class="math inline">\(\textcolor{latent}{f}_\star\)</span> is still Gaussian, but with an additional noise term:</p>
+<p><span class="math display">\[
+\begin{bmatrix} {\textcolor{output}{\boldsymbol{y}}}\\ \textcolor{latent}{f}_\star \end{bmatrix} \sim {\mathcal{N}}\left({\boldsymbol{0}}, \begin{bmatrix} {\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}}&amp; {\boldsymbol{k}}_\star \\ {\boldsymbol{k}}_\star^\top &amp; k_{\star\star} \end{bmatrix}\right)
+\]</span></p>
+<p>The distribution of <span class="math inline">\(\textcolor{latent}{f}_\star\)</span> given <span class="math inline">\({\textcolor{output}{\boldsymbol{y}}}\)</span> is:</p>
+<p><span class="math display">\[
+\textcolor{latent}{f}_\star \mid {\textcolor{output}{\boldsymbol{y}}}\sim {\mathcal{N}}({\boldsymbol{k}}_\star^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\textcolor{output}{\boldsymbol{y}}}, k_{\star\star} - {\boldsymbol{k}}_\star^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\boldsymbol{k}}_\star)
+\]</span></p>
+<p>We can also marginalize out the noise to get the distribution of <span class="math inline">\(\textcolor{output}{y}_\star\)</span>:</p>
+<p><span class="math display">\[
+\textcolor{output}{y}_\star \mid {\textcolor{output}{\boldsymbol{y}}}\sim {\mathcal{N}}({\boldsymbol{k}}_\star^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\textcolor{output}{\boldsymbol{y}}}, k_{\star\star}  - {\boldsymbol{k}}_\star^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\boldsymbol{k}}_\star+ \sigma^2)
+\]</span></p>
+</section>
+<section id="section-6" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/gp_regression?embed=True" width="1920" height="1000" frameborder="0">
+</iframe>
+</section></section>
+<section>
+<section id="weight-space-view-of-gaussian-processes" class="title-slide slide level1 center">
+<h1>Weight-space view of Gaussian Processes</h1>
+
+</section>
+<section id="review-bayesian-linear-regression" class="slide level2">
+<h2>Review: Bayesian Linear Regression</h2>
+<p>Recall lecture on <a href="03_linear_regression.html">Bayesian Linear Regression</a>:</p>
+<ul>
+<li>Modeling the data as a linear combination of the features plus noise:</li>
+</ul>
+<p><span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}, \sigma^2{\boldsymbol{I}})
+\]</span></p>
+<ul>
+<li>Prior over the weights:</li>
+</ul>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}) = {\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{0}}, {\boldsymbol{I}})
+\]</span></p>
+</section>
+<section id="review-bayesian-linear-regression-1" class="slide level2">
+<h2>Review: Bayesian Linear Regression</h2>
+<ul>
+<li>Posterior over the weights:</li>
+</ul>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{\mu}}, {\boldsymbol{\Sigma}})
+\]</span></p>
+<p>with <span class="math display">\[
+{\boldsymbol{\Sigma}}= \left(\frac{1}{\sigma^2}{\textcolor{input}{\boldsymbol{X}}}^\top{\textcolor{input}{\boldsymbol{X}}}+ {\boldsymbol{I}}\right)^{-1} \quad \text{and} \quad {\boldsymbol{\mu}}= \sigma^{-2}{\boldsymbol{\Sigma}}{\textcolor{input}{\boldsymbol{X}}}^\top{\textcolor{output}{\boldsymbol{y}}}
+\]</span></p>
+<ul>
+<li>Predictive distribution for a new input <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}_\star\)</span>:</li>
+</ul>
+<p><span class="math display">\[
+p(\textcolor{output}{y}_\star \mid {\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}(\textcolor{output}{y}_\star \mid {\boldsymbol{\mu}}^\top{\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{input}{\boldsymbol{x}}}_\star^\top{\boldsymbol{\Sigma}}{\textcolor{input}{\boldsymbol{x}}}_\star + \sigma^2)
+\]</span></p>
+</section>
+<section id="introducing-basis-functions" class="slide level2">
+<h2>Introducing basis functions</h2>
+<ul>
+<li>Transform the inputs using a set of <span class="math inline">\(D\)</span> basis functions:</li>
+</ul>
+<p><span class="math display">\[
+{\textcolor{input}{\boldsymbol{x}}}\to {\boldsymbol{\phi}}({\textcolor{input}{\boldsymbol{x}}}) = \begin{bmatrix} \phi_1({\textcolor{input}{\boldsymbol{x}}}) &amp; \cdots &amp; \phi_D({\textcolor{input}{\boldsymbol{x}}}) \end{bmatrix}^\top
+\]</span></p>
+<ul>
+<li><p>The functions <span class="math inline">\(\phi_d({\textcolor{input}{\boldsymbol{x}}})\)</span> are known as <em>basis functions</em>.</p></li>
+<li><p>Define:</p></li>
+</ul>
+<p><span class="math display">\[
+{\textcolor{input}{\boldsymbol{\Phi}}}=
+\begin{bmatrix}
+\phi_1(\textcolor{input}{x}_1) &amp; \cdots &amp; \phi_D(\textcolor{input}{x}_1) \\
+\vdots &amp; \ddots &amp; \vdots \\
+\phi_1(\textcolor{input}{x}_N) &amp; \cdots &amp; \phi_D(\textcolor{input}{x}_N)
+\end{bmatrix} \in \mathbb{R}^{N \times D}
+\]</span></p>
+</section>
+<section id="introducing-basis-functions-1" class="slide level2">
+<h2>Introducing basis functions</h2>
+<p>Apply Bayesian linear regression to the transformed inputs:</p>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{\mu}}, {\boldsymbol{\Sigma}})
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[
+{\boldsymbol{\Sigma}}= \left(\frac{1}{\sigma^2}{\textcolor{input}{\boldsymbol{\Phi}}}^\top{\textcolor{input}{\boldsymbol{\Phi}}}+ {\boldsymbol{I}}\right)^{-1} \quad \text{and} \quad {\boldsymbol{\mu}}= \sigma^{-2}{\boldsymbol{\Sigma}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top{\textcolor{output}{\boldsymbol{y}}}
+\]</span></p>
+<ul>
+<li>Predictive distribution for a new input <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}_\star\)</span>:</li>
+</ul>
+<p><span class="math display">\[
+p(\textcolor{output}{y}_\star \mid {\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}(\textcolor{output}{y}_\star \mid {\boldsymbol{\mu}}^\top\textcolor{input}{\boldsymbol{\phi}}_\star,\;\textcolor{input}{\boldsymbol{\phi}}_\star^\top{\boldsymbol{\Sigma}}\textcolor{input}{\boldsymbol{\phi}}_\star + \sigma^2)
+\]</span></p>
+<p>where <span class="math inline">\(\textcolor{input}{\boldsymbol{\phi}}_\star = {\boldsymbol{\phi}}({\textcolor{input}{\boldsymbol{x}}}_\star)\)</span>.</p>
+</section>
+<section id="bayesian-linear-regression-as-a-kernel-method" class="slide level2">
+<h2>Bayesian Linear Regression as a kernel method</h2>
+<ul>
+<li>We are going to show that predictions in Bayesian linear regression can be expressed in terms of scalar products</li>
+</ul>
+<p><span class="math display">\[
+k({\textcolor{input}{\boldsymbol{x}}}, {\textcolor{input}{\boldsymbol{x}}}^\prime) = {\boldsymbol{\phi}}({\textcolor{input}{\boldsymbol{x}}})^\top{\boldsymbol{\phi}}({\textcolor{input}{\boldsymbol{x}}}^\prime)
+\]</span></p>
+<ul>
+<li><p>This is known as the <em>kernel trick</em>.</p></li>
+<li><p>The kernel function <span class="math inline">\(k({\textcolor{input}{\boldsymbol{x}}}, {\textcolor{input}{\boldsymbol{x}}}^\prime)\)</span> is a measure of similarity between two inputs <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}\)</span> and <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}^\prime\)</span>.</p></li>
+</ul>
+<p>For a matrix input <span class="math inline">\({\textcolor{input}{\boldsymbol{X}}}\)</span>, the kernel matrix is defined as</p>
+<p><span class="math display">\[
+{\boldsymbol{K}}= {\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top = \begin{bmatrix} k({\textcolor{input}{\boldsymbol{x}}}_1, {\textcolor{input}{\boldsymbol{x}}}_1) &amp; \cdots &amp; k({\textcolor{input}{\boldsymbol{x}}}_1, {\textcolor{input}{\boldsymbol{x}}}_N) \\ \vdots &amp; \ddots &amp; \vdots \\ k({\textcolor{input}{\boldsymbol{x}}}_N, {\textcolor{input}{\boldsymbol{x}}}_1) &amp; \cdots &amp; k({\textcolor{input}{\boldsymbol{x}}}_N, {\textcolor{input}{\boldsymbol{x}}}_N) \end{bmatrix} \in \mathbb{R}^{N \times N}
+\]</span></p>
+</section>
+<section id="intuition-of-the-kernel-trick" class="slide level2">
+<h2>Intuition of the kernel trick</h2>
+<div title="Woodbury matrix identity">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Woodbury matrix identity</strong></p>
+</div>
+<div class="callout-content">
+<p>Recall the Woodbury matrix identity: <span class="math display">\[
+({\boldsymbol{A}}+ {\boldsymbol{U}}{\boldsymbol{C}}{\boldsymbol{V}})^{-1} = {\boldsymbol{A}}^{-1} - {\boldsymbol{A}}^{-1}{\boldsymbol{U}}({\boldsymbol{C}}^{-1} + {\boldsymbol{V}}{\boldsymbol{A}}^{-1}{\boldsymbol{U}})^{-1}{\boldsymbol{V}}{\boldsymbol{A}}^{-1}
+\]</span> (Do not remember this formula!)</p>
+</div>
+</div>
+</div>
+</div>
+<p>Use the Woodbury matrix identity to rewrite the posterior covariance:</p>
+<p><span class="math display">\[
+\begin{aligned}
+{\boldsymbol{\Sigma}}&amp;= \left(\frac{1}{\sigma^2}{\textcolor{input}{\boldsymbol{\Phi}}}^\top{\textcolor{input}{\boldsymbol{\Phi}}}+ {\boldsymbol{I}}\right)^{-1} \\
+&amp;= {\boldsymbol{I}}- {\textcolor{input}{\boldsymbol{\Phi}}}^\top\left(\sigma^2{\boldsymbol{I}}+ {\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}{\textcolor{input}{\boldsymbol{\Phi}}}
+\end{aligned}
+\]</span></p>
+</section>
+<section id="predictions-can-be-expressed-in-terms-of-scalar-products" class="slide level2">
+<h2>Predictions can be expressed in terms of scalar products</h2>
+<p><span class="math display">\[
+p(\textcolor{output}{y}_\star \mid {\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}(\textcolor{output}{y}_\star \mid {\boldsymbol{\mu}}^\top\textcolor{input}{\boldsymbol{\phi}}_\star,\;\textcolor{input}{\boldsymbol{\phi}}_\star^\top{\boldsymbol{\Sigma}}\textcolor{input}{\boldsymbol{\phi}}_\star + \sigma^2)
+\]</span></p>
+<p>We want to express the predictive mean and variance in terms of scalar products of the basis functions.</p>
+<p><strong>Variance</strong>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\textcolor{input}{\boldsymbol{\phi}}_\star^\top{\boldsymbol{\Sigma}}\textcolor{input}{\boldsymbol{\phi}}_\star + \sigma^2 &amp;= \textcolor{input}{\boldsymbol{\phi}}_\star^\top\left({\boldsymbol{I}}- {\textcolor{input}{\boldsymbol{\Phi}}}^\top\left(\sigma^2{\boldsymbol{I}}+ {\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}{\textcolor{input}{\boldsymbol{\Phi}}}\right)\textcolor{input}{\boldsymbol{\phi}}_\star + \sigma^2 \\
+&amp;= \textcolor{input}{\boldsymbol{\phi}}_\star^\top\textcolor{input}{\boldsymbol{\phi}}_\star - \textcolor{input}{\boldsymbol{\phi}}_\star^\top{\textcolor{input}{\boldsymbol{\Phi}}}^\top\left(\sigma^2{\boldsymbol{I}}+ {\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}{\textcolor{input}{\boldsymbol{\Phi}}}\textcolor{input}{\boldsymbol{\phi}}_\star + \sigma^2 \\
+&amp;= k_{\star\star} - {\boldsymbol{k}}_\star^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\boldsymbol{k}}_\star + \sigma^2
+\end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\({\boldsymbol{k}}_\star = k({\textcolor{input}{\boldsymbol{X}}}, {\textcolor{input}{\boldsymbol{x}}}_\star)\)</span> and <span class="math inline">\(k_{\star\star} = k({\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{input}{\boldsymbol{x}}}_\star)\)</span>.</p>
+<p>Compare this with the predictive variance in the Gaussian process we have seen <a href="10_gaussian_process.html#/predictions-with-gaussian-processes-with-noise">before</a>.</p>
+</section>
+<section id="predictions-can-be-expressed-in-terms-of-scalar-products-1" class="slide level2">
+<h2>Predictions can be expressed in terms of scalar products</h2>
+<p><strong>Mean</strong>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+{\boldsymbol{\mu}}^\top\textcolor{input}{\boldsymbol{\phi}}_\star &amp;= \sigma^{-2}\textcolor{input}{\boldsymbol{\phi}}_\star^\top{\boldsymbol{\Sigma}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top{\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= \sigma^{-2}\textcolor{input}{\boldsymbol{\phi}}_\star^\top\left({\boldsymbol{I}}- {\textcolor{input}{\boldsymbol{\Phi}}}^\top\left(\sigma^2{\boldsymbol{I}}+ {\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}{\textcolor{input}{\boldsymbol{\Phi}}}\right){\textcolor{input}{\boldsymbol{\Phi}}}^\top{\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= \sigma^{-2}\textcolor{input}{\boldsymbol{\phi}}_\star^\top {\textcolor{input}{\boldsymbol{\Phi}}}^\top \left( {\boldsymbol{I}}- \left(\sigma^2{\boldsymbol{I}}+ {\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top \right){\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= \sigma^{-2}\textcolor{input}{\boldsymbol{\phi}}_\star^\top {\textcolor{input}{\boldsymbol{\Phi}}}^\top \left( {\boldsymbol{I}}- \left({\boldsymbol{I}}+ \sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}\sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top \right){\textcolor{output}{\boldsymbol{y}}}\\
+\end{aligned}
+\]</span></p>
+<p>Apply again the Woodbury matrix identity with <span class="math inline">\({\boldsymbol{A}},{\boldsymbol{U}},{\boldsymbol{V}}= {\boldsymbol{I}}\)</span> and <span class="math inline">\({\boldsymbol{C}}= \left(\sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}\)</span>:</p>
+<p><span class="math display">\[
+{\boldsymbol{I}}- \left({\boldsymbol{I}}+ \sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}\sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top = \left( {\boldsymbol{I}}+ \sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top \right)^{-1}
+\]</span></p>
+<p>continue…</p>
+</section>
+<section id="predictions-can-be-expressed-in-terms-of-scalar-products-2" class="slide level2">
+<h2>Predictions can be expressed in terms of scalar products</h2>
+<p><span class="math display">\[
+\begin{aligned}
+{\boldsymbol{\mu}}^\top\textcolor{input}{\boldsymbol{\phi}}_\star &amp;= \sigma^{-2}\textcolor{input}{\boldsymbol{\phi}}_\star^\top {\textcolor{input}{\boldsymbol{\Phi}}}^\top \left( {\boldsymbol{I}}- \left({\boldsymbol{I}}+ \sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top\right)^{-1}\sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top \right){\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= \sigma^{-2}\textcolor{input}{\boldsymbol{\phi}}_\star^\top {\textcolor{input}{\boldsymbol{\Phi}}}^\top \left( {\boldsymbol{I}}+ \sigma^{-2}{\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top \right)^{-1}{\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= \textcolor{input}{\boldsymbol{\phi}}_\star^\top {\textcolor{input}{\boldsymbol{\Phi}}}^\top \left( \sigma^2{\boldsymbol{I}}+ {\textcolor{input}{\boldsymbol{\Phi}}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top \right)^{-1}{\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= {\boldsymbol{k}}_\star^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\textcolor{output}{\boldsymbol{y}}}
+\end{aligned}
+\]</span></p>
+<p>Again, compare this with the predictive mean in the Gaussian process we have seen <a href="10_gaussian_process.html#/predictions-with-gaussian-processes-with-noise">before</a>.</p>
+</section>
+<section id="intuition-of-the-kernel-trick-1" class="slide level2">
+<h2>Intuition of the kernel trick</h2>
+<p>You can either to linear regression by working with the feature mappings <span class="math inline">\({\boldsymbol{\phi}}(\cdot)\)</span> or with the kernel function <span class="math inline">\(k(\cdot, \cdot)\)</span>.</p>
+<ol type="1">
+<li>Working with <span class="math inline">\({\boldsymbol{\phi}}(\cdot)\)</span> costs <span class="math inline">\(O(D^2)\)</span> memory and <span class="math inline">\(O(D^3)\)</span> time.</li>
+<li>Working with <span class="math inline">\(k(\cdot, \cdot)\)</span> costs <span class="math inline">\(O(N^2)\)</span> memory and <span class="math inline">\(O(N^3)\)</span> time.</li>
+</ol>
+<p>If <span class="math inline">\(D \gg N\)</span>, the kernel trick is more efficient.</p>
+<p>For example, working with <span class="math inline">\(k(\cdot, \cdot)\)</span> allows us to implicitly use infinite-dimensional feature spaces.</p>
+</section>
+<section id="rbf-kernel-has-infinite-basis-functions" class="slide level2">
+<h2>RBF kernel has infinite basis functions</h2>
+<p>One of such examples is the RBF (or squared exponential) kernel we have seen before:</p>
+<p><span class="math display">\[
+k({\textcolor{input}{\boldsymbol{x}}}, {\textcolor{input}{\boldsymbol{x}}}^\prime) = \textcolor{vparams}\alpha \exp\left(-\frac{1}{2\textcolor{vparams}\lambda^2}\norm{{\textcolor{input}{\boldsymbol{x}}}- {\textcolor{input}{\boldsymbol{x}}}^\prime}^2\right)
+\]</span></p>
+<p>We can show that the RBF kernel corresponds to an infinite-dimensional feature space.</p>
+</section>
+<section id="rbf-kernel-has-infinite-basis-functions-1" class="slide level2">
+<h2>RBF kernel has infinite basis functions</h2>
+<p>Suppose <span class="math inline">\(\textcolor{vparams}\lambda = 1\)</span> and <span class="math inline">\(\textcolor{vparams}\alpha = 1\)</span>, and <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}\in {\mathbb{R}}\)</span>.</p>
+<p><span class="math display">\[
+k(\textcolor{input}{x}, \textcolor{input}{x}^\prime) = \exp\left(-\frac{1}{2}(\textcolor{input}{x}- \textcolor{input}{x}^\prime)^2\right) = \exp\left(-\frac{1}{2}\textcolor{input}{x}^2\right)\exp\left(-\frac{1}{2}{\textcolor{input}{x}^\prime}^2\right)\exp(\textcolor{input}{x}\textcolor{input}{x}^\prime)
+\]</span></p>
+<p>Use the Taylor expansion of the exponential function:</p>
+<p><span class="math display">\[
+\exp(\textcolor{input}{x}\textcolor{input}{x}^\prime) = 1 + \textcolor{input}{x}\textcolor{input}{x}^\prime + \frac{1}{2!}(\textcolor{input}{x}\textcolor{input}{x}^\prime)^2 + \frac{1}{3!}(\textcolor{input}{x}\textcolor{input}{x}^\prime)^3 + \cdots
+\]</span></p>
+<p>Define the infinite-dimensional feature mappings:</p>
+<p><span class="math display">\[
+\textcolor{input}{x}\to \phi(\textcolor{input}{x}) =  \exp\left(-\frac{1}{2}\textcolor{input}{x}^2\right)\begin{bmatrix} 1 &amp; \textcolor{input}{x}&amp; \frac{1}{\sqrt{2!}}\textcolor{input}{x}^2 &amp; \frac{1}{\sqrt{3!}}\textcolor{input}{x}^3 &amp; \cdots \end{bmatrix}^\top
+\]</span></p>
+</section></section>
+<section>
+<section id="model-selection-in-gaussian-processes" class="title-slide slide level1 center">
+<h1>Model selection in Gaussian Processes</h1>
+
+</section>
+<section id="model-selection-in-gaussian-processes-1" class="slide level2">
+<h2>Model selection in Gaussian Processes</h2>
+<ul>
+<li><p>In practice, we need to choose the kernel function and its hyperparameters.</p>
+<ul>
+<li>For example, in the RBF kernel, we need to choose the amplitude <span class="math inline">\(\alpha\)</span> and the length scale <span class="math inline">\(\lambda\)</span>.</li>
+</ul></li>
+<li><p>The choice of the kernel function and its hyperparameters is known as <em>model selection</em>.</p></li>
+<li><p>We already saw how to do model selection in Bayesian linear regression using the marginal likelihood.</p></li>
+<li><p>In Gaussian processes, we can also use the marginal likelihood to perform model selection.</p></li>
+</ul>
+<p><span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}) = \int p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{latent}{\boldsymbol{f}}})p({\textcolor{latent}{\boldsymbol{f}}}) \dd{\textcolor{latent}{\boldsymbol{f}}}
+\]</span></p>
+</section>
+<section id="marginal-likelihood-in-gaussian-processes" class="slide level2">
+<h2>Marginal likelihood in Gaussian Processes</h2>
+<p>Let’s be explicit about the hyperparameters <span class="math inline">\({\textcolor{params}{\boldsymbol{\theta}}}\)</span> of the kernel function <span class="math inline">\(k(\cdot, \cdot)\)</span>: <span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{\theta}}}) = \int p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{latent}{\boldsymbol{f}}}, {\textcolor{params}{\boldsymbol{\theta}}})p({\textcolor{latent}{\boldsymbol{f}}}\mid {\textcolor{params}{\boldsymbol{\theta}}}) \dd{\textcolor{latent}{\boldsymbol{f}}}= {\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\boldsymbol{0}}, {\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})
+\]</span></p>
+<p><span style="color:red;">Maximize</span> the marginal (log-)likelihood with respect to the hyperparameters <span class="math inline">\({\textcolor{params}{\boldsymbol{\theta}}}\)</span>:</p>
+<p><span class="math display">\[
+\arg\max_{{\textcolor{params}{\boldsymbol{\theta}}}} \log p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{\theta}}}) = \arg\max_{{\textcolor{params}{\boldsymbol{\theta}}}} -\frac{1}{2}{\textcolor{output}{\boldsymbol{y}}}^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\textcolor{output}{\boldsymbol{y}}}- \frac{1}{2}\log\det({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}}) - \frac{N}{2}\log(2\pi)
+\]</span></p>
+<p><strong>Question</strong>: How to optimize the marginal likelihood?</p>
+</section>
+<section id="optimization-of-the-marginal-likelihood" class="slide level2">
+<h2>Optimization of the marginal likelihood</h2>
+<ul>
+<li><p>The marginal likelihood is a non-convex function of the hyperparameters <span class="math inline">\({\textcolor{params}{\boldsymbol{\theta}}}\)</span>.</p></li>
+<li><p>No closed-form solution to the optimization problem, but we can use gradient-based optimization methods.</p></li>
+<li><p>We can use automatic differentiation to compute the gradients of the marginal likelihood with respect to the hyperparameters.</p></li>
+</ul>
+<p><span class="math display">\[
+\frac{\partial}{\partial {\textcolor{params}{\boldsymbol{\theta}}}_i} \log p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{\theta}}}) = \frac{1}{2}{\textcolor{output}{\boldsymbol{y}}}^\top({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}\frac{\partial {\boldsymbol{K}}}{\partial {\textcolor{params}{\boldsymbol{\theta}}}_i}({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}{\textcolor{output}{\boldsymbol{y}}}- \frac{1}{2}\text{tr}\left(({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1}\frac{\partial {\boldsymbol{K}}}{\partial {\textcolor{params}{\boldsymbol{\theta}}}_i}\right)
+\]</span></p>
+<p>Remember to guarantee that the hyperparameters are valid (e.g., positive for the length scale).</p>
+</section>
+<section id="why-the-marginal-likelihood-works" class="slide level2">
+<h2>Why the marginal likelihood works</h2>
+<p><span class="math display">\[
+\underbrace{- \frac{1}{2} {\textcolor{output}{\boldsymbol{y}}}^\top ({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})^{-1} {\textcolor{output}{\boldsymbol{y}}}}_{\text{Model fit}} - \frac{1}{2} \underbrace{\log \det({\boldsymbol{K}}+ \sigma^2{\boldsymbol{I}})}_{\text{Model complexity}} - \frac{N}{2} \log(2\pi)
+\]</span></p>
+<p>The marginal likelihood is a trade-off between the fit to the data and the complexity of the model.</p>
+</section>
+<section id="section-7" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/marginal_likelihood?embed=True" width="1920" height="1000" frameborder="0">
+</iframe>
+</section>
+<section id="section-8" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/ml_non_identifiability?embed=True" width="1920" height="1000" frameborder="0">
+</iframe>
+</section></section>
+<section>
+<section id="applications-of-gaussian-processes" class="title-slide slide level1 center">
+<h1>Applications of Gaussian Processes</h1>
+
+</section>
+<section id="time-series-foundation-models" class="slide level2">
+<h2>Time Series Foundation Models</h2>
+<p>Gaussian processes are a natural choice for modeling time series data, as they can capture complex temporal dependencies and provide uncertainty estimates.</p>
+<div class="columns">
+<div class="column" style="width:45%;">
+<p><strong>Amazon</strong> uses GPs to generate synthetic time series data for pre-training a <span class="purple">foundation model</span> for time series forecasting</p>
+</div><div class="column" style="width:55%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="https://arxiv.org/html/2403.07815v3/x3.png" class="img-fluid" style="width:100.0%"></p>
+<figcaption>KernelSynth: kernels are sampled from a bank, randomly composed (<span class="math inline">\(\times\)</span> or <span class="math inline">\(+\)</span>), and used in a GP prior to generate diverse synthetic time series for pretraining. Ansari et al.&nbsp;(2024).</figcaption>
+</figure>
+</div>
+</div></div>
+</section>
+<section id="spatial-modeling-science" class="slide level2">
+<h2>Spatial Modeling &amp; Science</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p><img data-src="images/gp_spatial_models.png" class="img-fluid" style="width:100.0%"></p>
+</div><div class="column" style="width:45%;">
+<p><strong>Geostatistics</strong></p>
+<ul>
+<li>Interpolate geospatial fields: rainfall, mineral deposits, temperature, infection spread, etc.</li>
+<li>Closed-form uncertainty <span class="math inline">\(\to\)</span> principled gap-filling</li>
+</ul>
+</div></div>
+</section>
+<section id="protein-stability-prediction" class="slide level2">
+<h2>Protein Stability Prediction</h2>
+<div class="columns">
+<div class="column" style="width:70%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="images/protein-folding-gp.png" class="img-fluid" style="width:100.0%"></p>
+<figcaption>GP surrogate for predicting protein stability changes (<span class="math inline">\(\Delta\Delta G\)</span>) upon mutation.</figcaption>
+</figure>
+</div>
+</div><div class="column" style="width:30%;">
+<ul>
+<li>Measuring protein stability is <strong>slow and costly</strong> — only a few hundred labeled examples</li>
+<li>GPs thrive in the <strong>small-data regime</strong> with principled uncertainty</li>
+</ul>
+</div></div>
+</section></section>
+<section>
+<section id="challenges-in-modern-gaussian-processes" class="title-slide slide level1 center">
+<h1>Challenges in modern Gaussian Processes</h1>
+
+</section>
+<section id="challenges-in-modern-gaussian-processes-1" class="slide level2">
+<h2>Challenges in modern Gaussian Processes</h2>
+<ul>
+<li><p><strong>Scalability</strong>: Gaussian processes have <span class="math inline">\(\mathcal O(N^3)\)</span> complexity in the number of data points <span class="math inline">\(N\)</span>.</p>
+<ul>
+<li>Solutions: subsets of data, kernel approximations, inducing points, random Fourier features, etc.</li>
+</ul></li>
+<li><p><strong>Non-Gaussian likelihoods</strong>: Exact Gaussian processes assume Gaussian likelihoods, but many real-world datasets have non-Gaussian likelihoods.</p>
+<ul>
+<li>Solutions: approximate inference</li>
+</ul></li>
+</ul>
+<div class="fragment">
+<p>Modern Gaussian processes introduce <span class="red"><strong>two</strong></span> very different types of approximations:</p>
+<ul>
+<li><span class="orange"><strong>Model approximation</strong></span>: for scalability</li>
+<li><span class="purple"><strong>Inference approximation</strong></span>: for non-Gaussian likelihoods</li>
+</ul>
+</div>
+</section>
+<section id="scalable-gaussian-processes" class="slide level2">
+<h2>Scalable Gaussian Processes</h2>
+<p><strong>Motivation</strong>:</p>
+<ul>
+<li>Gaussian processes have <span class="math inline">\(\mathcal O(N^3)\)</span> complexity in the number of data points <span class="math inline">\(N\)</span>.</li>
+<li>Above <span class="math inline">\(N \approx 10,000\)</span> data points, exact Gaussian processes become impractical.</li>
+</ul>
+<p><strong>Solution</strong>: Find approximations to scale Gaussian processes to large datasets.</p>
+<p>Two main approaches:</p>
+<ul>
+<li>Sparse Gaussian processes with inducing points (inspired by the function-space view)</li>
+<li>Kernel approximations using random Fourier features (inspired by the weight-space view)</li>
+</ul>
+</section>
+<section id="inducing-points" class="slide level2">
+<h2>Inducing points</h2>
+<p><strong>Idea</strong>: Augment the model with a set of <span class="math inline">\(M \ll N\)</span> inducing points <span class="math inline">\({\textcolor{input}{\boldsymbol{Z}}}= \{{\textcolor{input}{\boldsymbol{z}}}_1, \ldots, {\textcolor{input}{\boldsymbol{z}}}_M\}\)</span> with corresponding function values <span class="math inline">\({\textcolor{latent}{\boldsymbol{u}}}= \{\textcolor{latent}{u}_1, \ldots, \textcolor{latent}{u}_M\}\)</span>.</p>
+<p><strong>Problem</strong>: Somehow, solve the inference problem in this augmented model (which is still Gaussian) on a lower computational budget than the original model.</p>
+<p><span class="purple">Is this possible? Is it still possible to get exact inference in this augmented model? At what cost?</span></p>
+<div class="fragment">
+<p><span class="green"><strong>Yes</strong></span>, the predictive distribution for a new input <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}_\star\)</span> is: <span class="math display">\[
+p(\textcolor{output}{y}_\star \mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}, {\textcolor{input}{\boldsymbol{Z}}}) = {\mathcal{N}}\left(\textcolor{output}{y}_\star \mid {\boldsymbol{k}}_{\star{\textcolor{input}{\boldsymbol{Z}}}}^\top{\boldsymbol{Q}}_{{\textcolor{input}{\boldsymbol{Z}}}{\textcolor{input}{\boldsymbol{Z}}}}^{-1}{\boldsymbol{K}}_{{\textcolor{input}{\boldsymbol{Z}}}{\textcolor{input}{\boldsymbol{X}}}}({\boldsymbol{\Lambda}}+ \sigma^2{\boldsymbol{I}})^{-1}{\textcolor{output}{\boldsymbol{y}}},\; k_{\star\star} - {\boldsymbol{k}}_{\star{\textcolor{input}{\boldsymbol{Z}}}}^\top\left({\boldsymbol{K}}_{{\textcolor{input}{\boldsymbol{Z}}}{\textcolor{input}{\boldsymbol{Z}}}}^{-1} - {\boldsymbol{Q}}_{{\textcolor{input}{\boldsymbol{Z}}}{\textcolor{input}{\boldsymbol{Z}}}}^{-1}\right){\boldsymbol{k}}_{\star{\textcolor{input}{\boldsymbol{Z}}}} + \sigma^2\right)
+\]</span></p>
+<p>where <span class="math inline">\({\boldsymbol{Q}}_{{\textcolor{input}{\boldsymbol{Z}}}{\textcolor{input}{\boldsymbol{Z}}}} = {\boldsymbol{K}}_{{\textcolor{input}{\boldsymbol{Z}}}{\textcolor{input}{\boldsymbol{Z}}}} + {\boldsymbol{K}}_{{\textcolor{input}{\boldsymbol{Z}}}{\textcolor{input}{\boldsymbol{X}}}}({\boldsymbol{\Lambda}}+ \sigma^2{\boldsymbol{I}})^{-1}{\boldsymbol{K}}_{{\textcolor{input}{\boldsymbol{X}}}{\textcolor{input}{\boldsymbol{Z}}}}\)</span>.</p>
+<p><span class="green"><strong>Yes</strong></span>, the computational cost is <span class="math inline">\(O(NM^2)\)</span>, instead of <span class="math inline">\(O(N^3)\)</span>.</p>
+<!-- ## Inducing points
+
+- Introduce a set of $M \ll N$ inducing points $\mbZ = \{\mbz_1, \ldots, \mbz_M\}$ with corresponding function values $\mbu = \{\uu_1, \ldots, \uu_M\}$.
+
+- Assume the Gaussian process prior over both the training function values $\mbf$ and the inducing function values $\mbu$:
+
+$$
+[\f, \uu] \sim \mathcal{GP}(\mbzero, k(\cdot, \cdot))
+$$
+
+- The joint distribution is Gaussian:
+
+$$
+\begin{bmatrix} \mbf \\ \mbu \end{bmatrix} \sim \cN\left(\mbzero, \begin{bmatrix} \mbK_{\mbX\mbX} & \mbK_{\mbX\mbZ} \\ \mbK_{\mbZ\mbX} & \mbK_{\mbZ\mbZ} \end{bmatrix}\right)
+$$
+
+[How can we make predictions with this more complex model?]{.purple} [Everything is still Gaussian!]{.green}
+
+$$
+\begin{bmatrix}\mby \\ \mbu \\ \y_\star \end{bmatrix} \sim \cN\left(\mbzero, \begin{bmatrix} \mbK_{\mbX\mbX} + \sigma^2\mbI & \mbK_{\mbX\mbZ} & \mbk_{\star\mbX} \\ \mbK_{\mbZ\mbX} & \mbK_{\mbZ\mbZ} & \mbk_{\star\mbZ} \\ \mbk_{\star\mbX}^\top & \mbk_{\star\mbZ}^\top & k_{\star\star} \end{bmatrix}\right)
+$$ -->
+<!-- ## 
+
+<iframe src="https://srossi93-asi.hf.space/inducing_points?embed=True" width="1920" height="1000" frameborder="0"></iframe> -->
+<!-- ## Inference with inducing points
+
+For a new input $\mbx_\star$, the predictive distribution is:
+
+$$
+p(\y_\star \mid \mby, \mbX, \mbZ) = \cN\left(\y_\star \mid \mbk_{\star\mbZ}^\top\mbQ_{\mbZ\mbZ}^{-1}\mbK_{\mbZ\mbX}(\mbLambda + \sigma^2\mbI)^{-1}\mby,\; k_{\star\star} - \mbk_{\star\mbZ}^\top\left(\mbK_{\mbZ\mbZ}^{-1} - \mbQ_{\mbZ\mbZ}^{-1}\right)\mbk_{\star\mbZ} + \sigma^2\right)
+$$
+
+where $\mbQ_{\mbZ\mbZ} = \mbK_{\mbZ\mbZ} + \mbK_{\mbZ\mbX}(\mbLambda + \sigma^2\mbI)^{-1}\mbK_{\mbX\mbZ}$.
+
+**Note**: The predictive distribution depends on the inducing points $\mbZ$, but not on the inducing function values $\mbu$ (because they are integrated out).
+
+[**Problem**]{.red}: The inducing points $\mbZ$ are not part of the original model, so we need to choose them somehow.
+[How to choose the best locations for the inducing points?]{.purple} -->
+</div>
+</section>
+<section id="section-9" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/sparse_gp?embed=True" width="1920" height="800" frameborder="0">
+</iframe>
+</section>
+<section id="gaussian-processes-classification" class="slide level2">
+<h2>Gaussian Processes classification</h2>
+<ul>
+<li><p>Gaussian processes can be used for classification problems.</p></li>
+<li><p>Model the latent function <span class="math inline">\(f({\textcolor{input}{\boldsymbol{x}}})\)</span> as a Gaussian process and apply sigmoid function to get the probability of the class label: <span class="math display">\[
+p(\textcolor{output}{y}=1 \mid {\textcolor{input}{\boldsymbol{x}}}) = \sigma(f({\textcolor{input}{\boldsymbol{x}}}))
+\]</span></p></li>
+<li><p>Equivalent to assume the Bernoulli likelihood… <span class="math display">\[
+p(\textcolor{output}{y}\mid \textcolor{latent}{f}) = \text{Bern}(\textcolor{output}{y}\mid \sigma(\textcolor{latent}{f}))
+\]</span></p></li>
+<li><p>… and factorization <span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{latent}{\boldsymbol{f}}}) = \prod_{n=1}^N p(\textcolor{output}{y}_n \mid \textcolor{latent}{f}_n)
+\]</span></p></li>
+<li><p>The posterior predictive distribution is not Gaussian anymore and <span style="color:red;">intractable</span>.</p></li>
+</ul>
+<!-- ## Approximate inference for Gaussian Processes classification
+
+
+1. Compute the (approximate) posterior distribution for a test input $\mbx_\star$.
+
+$$
+p(\f_\star \mid \mby) = \int p(\f_\star \mid \mbf)p(\mbf\mid\mby) \dd\mbf 
+$$
+
+where $p(\mbf\mid\mby) = p(\mby\mid\mbf)p(\mbf)/p(\mby)$ is the posterior distribution of the functions given the data.
+
+2. Compute the predictive distribution for the class label $\y_\star$.
+
+$$
+p(\y_\star = 1 \mid \mby) = \int \sigma(\f_\star) p(\f_\star \mid \mby) \dd{\f_\star}
+$$
+
+where $\sigma(\cdot)$ is the sigmoid function. -->
+</section>
+<section id="approximate-inference-for-gaussian-processes-classification" class="slide level2">
+<h2>Approximate inference for Gaussian Processes classification</h2>
+<p>As we did for <a href="09_classification.html">Bayesian logistic regression</a>, we need to use approximate inference methods.</p>
+<ul>
+<li><p>Laplace approximation:</p>
+<ol type="1">
+<li>Find the mode of the posterior distribution using optimization methods.</li>
+<li>Compute the Hessian at the mode.</li>
+<li>Approximate the posterior distribution as a Gaussian with the mode and the Hessian.</li>
+</ol></li>
+<li><p>Variational inferece</p></li>
+</ul>
+</section>
+<section id="section-10" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/gp_classification_laplace?embed=True" width="1920" height="1000" frameborder="0">
+</iframe>
+<!-- ## Laplace approximation: step 1(a)
+
+**Objective**: Approximate $p(\mbf \mid \mby)$ as a Gaussian distribution $q(\mbf) = \cN(\mbf \mid \widehat\mbf, \mbH^{-1})$.
+
+Write the (log) posterior distribution as:
+
+$$
+\begin{aligned}
+\cL(\mbf) &= \log p(\mby \mid \mbf) + \log p(\mbf) = \log p(\mby \mid \mbf) - \frac{1}{2}\mbf^\top\mbK^{-1}\mbf - \frac{1}{2}\log\det\mbK - \frac{N}{2}\log(2\pi)
+\end{aligned}
+$$
+
+- Find the mode of the posterior distribution and use it as the mean of the Gaussian approximation.
+$$
+\widehat{\mbf} = \arg\max_{\mbf} \cL(\mbf)
+$$
+
+- Compute the Hessian at the mode and use it as inverse covariance of the Gaussian approximation.
+$$
+\mbH = \grad_{\mbf}^2 \cL(\widehat\mbf) = \underbrace{\grad_{\mbf}^2 \log p(\mby \mid \widehat\mbf)}_{\mbD} - \mbK^{-1} 
+$$
+
+## Laplace approximation: step 1(b)
+
+**Objective**: Approximate $q(\f_\star \mid \mby)=\int p(\f_\star \mid \mbf)q(\mbf) \dd\mbf$ 
+
+- $p(\f_\star \mid \mbf)$ is Gaussian under the Gaussian process assumption 
+
+$$
+p(\f_\star \mid \mbf) = \cN(\f_\star \mid \mbk_{\star}^\top\mbK^{-1}\mbf, k_{\star\star} - \mbk_{\star}^\top\mbK^{-1}\mbk_{\star})
+$$
+
+- $q(\mbf)$ is Gaussian with mean $\widehat\mbf$ and covariance $\mbH^{-1}= (\mbD - \mbK^{-1})^{-1}$.
+
+- The predictive distribution is a Gaussian with mean $\mbmu$ and covariance $\mbSigma$:
+
+$$
+\begin{aligned}
+\mbmu &= \mbk_{\star}^\top\mbK^{-1}\widehat\mbf \\
+\mbSigma 
+ % &= k_{\star\star} - \mbk_{\star}^\top\mbK^{-1}\mbk_{\star} + \mbk_{\star}^\top\mbK^{-1}\mbH\mbK^{-1}\mbk_{\star} = \\
+ &= k_{\star\star} - \mbk_{\star}^\top\left(\mbK + \mbD^{-1}\right)^{-1}\mbk_{\star}
+\end{aligned}
+$$
+
+## Laplace approximation: step 2
+
+**Objective**: Compute the predictive distribution for the class label $\y_\star$.
+
+$$
+\begin{aligned}
+p(\y_\star = 1 \mid \mby) &= \int \sigma(\f_\star) p(\f_\star \mid \mby) \dd{\f_\star} \\
+&= \int \sigma(\f_\star) \cN(\f_\star \mid \mbmu, \mbSigma) \dd{\f_\star}
+\end{aligned}
+$$
+
+- The integral is intractable, but as we did for Bayesian logistic regression, we can approximate it with Monte Carlo integration or the probit approximation.
+
+$$
+p(\y_\star = 1 \mid \mby) \approx \frac{1}{S}\sum_{s=1}^S \sigma(\f_\star^{(s)}) \quad \text{where} \quad \f_\star^{(s)} \sim \cN(\mbmu, \mbSigma)
+$$ -->
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../../../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../../../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': false,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":false},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'fast',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1920,
+
+        height: 1080,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 5.0e-2,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

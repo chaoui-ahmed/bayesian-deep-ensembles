@@ -1,0 +1,333 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2026
+
+% The authors should use one of these tracks.
+% Before accepting by the NeurIPS conference, select one of the options below.
+% 0. "default" for submission
+\usepackage[preprint]{neurips_2026}
+
+\workshoptitle{Advanced Statistical Inference 2026}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{amsmath}        % math environments
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{graphicx}       % figures
+\usepackage{algorithm}      % algorithm environment
+\usepackage{algorithmic}    % algorithmic pseudocode
+
+\title{Assignment for \emph{``Advanced Statistical Inference'' 2026}\\Simple and Scalable Predictive Uncertainty Estimation\\using Deep Ensembles}
+
+\author{%
+  Author \\
+  \texttt{email} \\
+  \And
+  Author \\
+  \texttt{email} \\
+}
+
+
+\begin{document}
+
+
+\maketitle
+
+
+\begin{abstract}
+This report presents a summary and partial reproduction of \emph{Simple and Scalable Predictive Uncertainty Estimation using Deep Ensembles} by Lakshminarayanan et al.\ (2017). The paper proposes a non-Bayesian alternative for predictive uncertainty estimation based on three ingredients: (1)~training probabilistic neural networks with proper scoring rules, (2)~adversarial training for smoothing predictions, and (3)~ensembling independently trained networks. We summarize the key ideas, connect them to the theoretical foundations covered in the Advanced Statistical Inference course (Bayesian inference, variational inference, Monte Carlo methods, Gaussian processes, and Bayesian neural networks), and reproduce the toy regression experiment demonstrating that deep ensembles provide well-calibrated uncertainty estimates that improve as ensemble size grows. The code is available at: \url{https://github.com/YOUR_USERNAME/deep-ensembles-asi2026}.
+\end{abstract}
+
+
+
+\section{Introduction}
+
+Reliable uncertainty estimation is critical for deploying machine learning models in safety-sensitive applications such as medical diagnosis, autonomous driving, and scientific discovery. A model should not only be accurate but also \emph{know what it does not know}: it should express high confidence on familiar inputs and high uncertainty on out-of-distribution data.
+
+The dominant paradigm for uncertainty in neural networks (NNs) is \textbf{Bayesian deep learning}, where one places a prior over the weights $\theta$ and computes (or approximates) the posterior $p(\theta \mid \mathcal{D})$. As covered in the ASI course, exact Bayesian inference is intractable for NNs due to high-dimensional, non-convex, multimodal posteriors. Approximate methods include:
+\begin{itemize}
+    \item \textbf{Variational Inference (VI):} Approximate the posterior with a tractable family $q(\theta;\nu)$ by maximizing the Evidence Lower Bound (ELBO): $\mathcal{L}_{\mathrm{ELBO}}(\nu) = \mathbb{E}_{q(\theta;\nu)}[\log p(y\mid\theta)] - \mathrm{KL}(q(\theta;\nu) \| p(\theta))$, as studied in Lecture~8.
+    \item \textbf{MCMC methods:} Generate correlated samples from $p(\theta\mid\mathcal{D})$ using Metropolis-Hastings or Hamiltonian Monte Carlo, as seen in Lectures~5--6.
+    \item \textbf{Laplace approximation:} Fit a Gaussian at the MAP estimate using the Hessian, covered in Lecture~7.
+    \item \textbf{MC-Dropout:} Interpret dropout at test time as approximate variational inference (Lecture~11).
+\end{itemize}
+
+Lakshminarayanan et al.\ propose \textbf{deep ensembles} as a simpler, scalable alternative that requires minimal modifications to standard NN training yet provides strong uncertainty estimates. This connects to the course discussion in Lecture~11 on how ensembles of randomly initialized networks explore different modes of the posterior landscape, and to Lecture~12 on the practical importance of decomposing epistemic and aleatoric uncertainty.
+
+
+\section{Summary of the Paper}
+
+\subsection{Problem Setup}
+
+Given a training set $\mathcal{D} = \{(\mathbf{x}_n, y_n)\}_{n=1}^{N}$, the goal is to learn a neural network that outputs a \emph{predictive distribution} $p_\theta(y \mid \mathbf{x})$ rather than a point estimate. For regression, the network outputs both a mean $\mu_\theta(\mathbf{x})$ and a variance $\sigma^2_\theta(\mathbf{x}) > 0$, modeling a heteroscedastic Gaussian:
+\begin{equation}
+    p_\theta(y \mid \mathbf{x}) = \mathcal{N}\!\left(y \;\middle|\; \mu_\theta(\mathbf{x}),\; \sigma^2_\theta(\mathbf{x})\right).
+    \label{eq:gaussian_output}
+\end{equation}
+For classification with $K$ classes, $p_\theta(y \mid \mathbf{x})$ is a categorical distribution obtained via softmax.
+
+\subsection{Proper Scoring Rules}
+
+A \textbf{proper scoring rule} $S(p_\theta, (y,\mathbf{x}))$ assigns a numerical score to a predictive distribution, rewarding calibration. A scoring rule is proper if $S(p_\theta, q) \leq S(q, q)$ with equality iff $p_\theta = q$. This ensures that maximizing the score recovers the true distribution.
+
+The negative log-likelihood (NLL) is a proper scoring rule. For the Gaussian output in Eq.~\eqref{eq:gaussian_output}, the training loss becomes:
+\begin{equation}
+    \mathcal{L}(\theta) = \sum_{n=1}^{N} \left[ \frac{\log \sigma^2_\theta(\mathbf{x}_n)}{2} + \frac{(y_n - \mu_\theta(\mathbf{x}_n))^2}{2\sigma^2_\theta(\mathbf{x}_n)} \right].
+    \label{eq:nll_loss}
+\end{equation}
+
+\textbf{Connection to the course:} This is exactly the Gaussian log-likelihood used in Bayesian linear regression (Lecture~3 and Lab~1), extended to learned heteroscedastic variance. In Lab~1, we implemented the Gaussian log-likelihood $\log \mathcal{N}(y \mid \mu, \sigma^2)$ for computing posterior distributions. The Brier score, also a proper scoring rule, was introduced in the classification lecture (Lecture~9).
+
+\subsection{Adversarial Training for Smoothing}
+
+The authors propose using FGSM-style adversarial perturbations to smooth predictive distributions:
+\begin{equation}
+    \mathbf{x}'_n = \mathbf{x}_n + \epsilon \, \text{sign}\!\left(\nabla_{\mathbf{x}_n} \mathcal{L}(\theta, \mathbf{x}_n, y_n)\right),
+\end{equation}
+where $\epsilon$ is set to 1\% of the input range per dimension. The augmented loss $\mathcal{L}(\theta, \mathbf{x}_n, y_n) + \mathcal{L}(\theta, \mathbf{x}'_n, y_n)$ encourages the network to produce consistent predictions under small input perturbations. This acts as a regularizer that smooths the predictive distribution in input space.
+
+\subsection{Ensemble Combination}
+
+An ensemble of $M$ networks $\{\theta_m\}_{m=1}^{M}$, each trained independently from different random initializations on the full dataset, yields a uniformly-weighted mixture:
+\begin{equation}
+    p(y \mid \mathbf{x}) = \frac{1}{M}\sum_{m=1}^{M} p_{\theta_m}(y \mid \mathbf{x}).
+\end{equation}
+
+For regression, this mixture of Gaussians is approximated by a single Gaussian with:
+\begin{equation}
+    \mu_*(\mathbf{x}) = \frac{1}{M}\sum_{m} \mu_{\theta_m}(\mathbf{x}), \qquad
+    \sigma^2_*(\mathbf{x}) = \frac{1}{M}\sum_{m}\left[\sigma^2_{\theta_m}(\mathbf{x}) + \mu^2_{\theta_m}(\mathbf{x})\right] - \mu^2_*(\mathbf{x}).
+    \label{eq:ensemble_pred}
+\end{equation}
+
+The total predictive variance naturally decomposes into:
+\begin{itemize}
+    \item \textbf{Aleatoric uncertainty:} $\frac{1}{M}\sum_m \sigma^2_{\theta_m}(\mathbf{x})$ — the average predicted noise, irreducible even with infinite data.
+    \item \textbf{Epistemic uncertainty:} $\frac{1}{M}\sum_m \mu^2_{\theta_m}(\mathbf{x}) - \mu^2_*(\mathbf{x})$ — the variance of the means, reflecting model disagreement.
+\end{itemize}
+
+\textbf{Connection to the course:} This decomposition directly mirrors the epistemic vs.\ aleatoric distinction from Lecture~12. The course emphasized that epistemic uncertainty is reducible with more data (and is useful for active learning via BALD), while aleatoric uncertainty is inherent to the data-generating process. The ensemble's mean-of-variances captures aleatoric uncertainty, while the variance-of-means captures epistemic uncertainty — exactly the decomposition discussed in Lecture~12.
+
+\subsection{Why Ensembles Work: Connection to Bayesian Inference}
+
+As discussed in Lecture~11, neural network loss landscapes are highly non-convex with many local minima. Different random initializations lead networks to converge to different modes of the posterior. While Bayesian methods like VI (Lecture~8) approximate the posterior with a single unimodal distribution $q(\theta;\nu)$, deep ensembles implicitly capture multiple modes.
+
+This connects to the course discussion on MC-Dropout (Lecture~11): dropout can be interpreted as variational inference with $q(\theta) = (1-p)\mathcal{N}(m, \sigma^2) + p\,\mathcal{N}(0, \sigma^2)$. However, since all dropout masks share the same base weights, MC-Dropout explores a limited region of weight space. Deep ensembles, by contrast, explore genuinely different modes, which is why they tend to produce better-calibrated uncertainty, especially for out-of-distribution detection.
+
+Furthermore, the infinite-width connection (Lecture~11) shows that randomly initialized NNs converge to Gaussian processes as width grows. This provides theoretical grounding for why random initialization creates meaningful diversity: each network is effectively sampling from a different region of function space.
+
+
+\section{Reproduced Results}
+
+\subsection{Toy Regression Experiment}
+
+We reproduce the 1D toy regression experiment from Section~3.2 of the paper. The dataset consists of 20 training points drawn from $y = x^3 + \epsilon$ where $\epsilon \sim \mathcal{N}(0, 9)$, following the setup of Hern\'andez-Lobato and Adams (2015).
+
+\textbf{Implementation details.} We implement the experiment in Python using JAX, following the framework introduced in the JAX tutorial (Tutorial~2). Each network in the ensemble is a fully connected MLP with one hidden layer of 50 units and ReLU activations. The final layer outputs two values: $\mu_\theta(\mathbf{x})$ and $\log\sigma^2_\theta(\mathbf{x})$ (passed through softplus to enforce positivity, with a minimum variance of $10^{-6}$ for numerical stability). We train using the NLL loss from Eq.~\eqref{eq:nll_loss} with Adam optimizer (learning rate $0.01$) for 5000 epochs.
+
+\textbf{Experimental protocol.}
+\begin{enumerate}
+    \item \textbf{Single NN with MSE:} Train a single network to minimize MSE. No variance is learned; uncertainty is unavailable.
+    \item \textbf{Single NN with NLL:} Train a single network to minimize NLL (Eq.~\eqref{eq:nll_loss}). The network learns both $\mu$ and $\sigma^2$.
+    \item \textbf{Ensemble of $M=5$ NNs with NLL:} Train 5 networks independently from random initializations; combine using Eq.~\eqref{eq:ensemble_pred}.
+\end{enumerate}
+
+\textbf{Results.} Our reproduction confirms the paper's key findings:
+\begin{itemize}
+    \item A single NN trained with MSE provides only a point prediction with no uncertainty estimate.
+    \item A single NN trained with NLL learns a reasonable variance but tends to be overconfident far from the training data — the uncertainty does not grow sufficiently in regions without observations.
+    \item The ensemble of 5 NNs produces well-calibrated uncertainty: the predictive variance is small near the training data and grows as we move away, capturing the expected behavior that predictions should be less certain in unexplored regions.
+\end{itemize}
+
+Figure~\ref{fig:toy_regression} shows the three experimental protocols side by side. The growing uncertainty band in the ensemble plot (right) is the key result: the model correctly expresses higher uncertainty in regions where it has not seen data.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/toy_regression_combined.pdf}
+\caption{Toy regression experiment ($y = x^3 + \epsilon$, 20 training points). \textbf{(a)}~Single NN with MSE provides only a point prediction. \textbf{(b)}~Single NN with NLL learns variance but remains overconfident far from the data. \textbf{(c)}~Deep ensemble ($M=5$) with NLL produces well-calibrated uncertainty that grows away from training data. Shaded regions show $\mu \pm 3\sigma$.}
+\label{fig:toy_regression}
+\end{figure}
+
+Figure~\ref{fig:decomposition} shows the uncertainty decomposition of the ensemble predictions. The aleatoric component (green) remains roughly constant across the input space — reflecting the irreducible noise $\epsilon \sim \mathcal{N}(0, 9)$ — while the epistemic component (red) grows sharply outside the training range $[-4, 4]$, reflecting model disagreement in unexplored regions.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/uncertainty_decomposition.pdf}
+\caption{Uncertainty decomposition for the deep ensemble. Aleatoric uncertainty (green) captures irreducible data noise; epistemic uncertainty (red) captures model disagreement and grows away from training data.}
+\label{fig:decomposition}
+\end{figure}
+
+These results align with the Bayesian linear regression experiments from Lab~1, where we observed that the posterior predictive variance grows away from training data. The key advantage of deep ensembles is achieving this behavior with neural networks \emph{without} requiring explicit Bayesian inference.
+
+\subsection{Comparison with Bayesian Approaches}
+
+\begin{table}[h]
+\centering
+\caption{Qualitative comparison of uncertainty methods studied in the ASI course.}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Method} & \textbf{Scalability} & \textbf{Multimodal} & \textbf{Simplicity} \\
+\midrule
+Exact Bayes (Lab 1)   & Low  & Yes & Medium \\
+VI / Mean-field (Lec. 8) & High & No  & Medium \\
+MCMC (Lec. 5--6, Lab 2) & Low  & Yes & Low \\
+Laplace (Lec. 7)      & High & No  & Medium \\
+MC-Dropout (Lec. 11)  & High & No  & High \\
+\textbf{Deep Ensembles}        & \textbf{High} & \textbf{Yes} & \textbf{High} \\
+\bottomrule
+\end{tabular}
+\label{tab:comparison}
+\end{table}
+
+Deep ensembles uniquely combine high scalability, multimodal posterior exploration, and implementation simplicity. Unlike VI or Laplace, which fit a single Gaussian mode, ensembles naturally capture multiple modes. Unlike MCMC, they are embarrassingly parallel and require no convergence diagnostics (burn-in, mixing assessment). The trade-off is the $M$-fold increase in computation and memory at inference time.
+
+
+\section{Discussion}
+
+\subsection{Strengths of the Approach}
+
+\textbf{Simplicity and practicality.} The method requires only three modifications to standard training: (1)~change the output layer to predict mean and variance, (2)~use NLL loss, and (3)~train $M$ copies. No posterior approximation family needs to be specified, no ELBO needs to be derived, and no convergence diagnostics are required.
+
+\textbf{Scalability.} Training is embarrassingly parallel. The authors demonstrate results on ImageNet with Inception networks — a scale that is challenging for most Bayesian methods. This addresses a key limitation of MCMC and VI methods discussed in Lectures~5--8.
+
+\textbf{Strong OOD detection.} The experiments on MNIST vs.\ NotMNIST and SVHN vs.\ CIFAR-10 show that deep ensembles produce higher entropy on unseen classes compared to MC-Dropout, which tends to be overconfident. This connects directly to the active learning discussion in Lecture~12: high epistemic uncertainty on OOD data is exactly what we want for the BALD acquisition function.
+
+\subsection{Limitations and Course Connections}
+
+\textbf{No principled prior.} Unlike Bayesian methods (Lectures~3, 7, 8, 11), deep ensembles have no explicit prior $p(\theta)$. The implicit ``prior'' comes from random initialization and the architecture. As discussed in Lecture~11, weight decay corresponds to a Gaussian prior, but ensembles do not leverage this connection for uncertainty.
+
+\textbf{Diversity is not guaranteed.} The method relies on random initialization producing diverse solutions. In Lecture~11, we learned that the loss landscape of NNs has many modes, but the diversity of solutions found by SGD from different initializations is not theoretically guaranteed to cover the posterior well.
+
+\textbf{Computational cost.} Training and storing $M$ networks (typically $M=5$) multiplies resource requirements. For the Gaussian process approach (Lecture~10), uncertainty comes for free from the posterior predictive distribution, though GPs scale cubically with dataset size.
+
+\textbf{Uncertainty calibration.} While the paper shows good calibration results, proper scoring rules alone do not guarantee calibration in finite samples. The connection between proper scoring rules and Bayesian inference (via the ELBO in Lecture~8) suggests that the NLL training objective has a natural Bayesian interpretation, which may partly explain the good empirical performance.
+
+\subsection{Broader Perspective}
+
+Deep ensembles occupy an interesting position in the landscape of uncertainty methods covered in the ASI course. They are \emph{frequentist} in nature (no explicit posterior) yet achieve \emph{Bayesian-like} behavior (growing uncertainty away from data, OOD detection). The theoretical connection via infinite-width limits (Lecture~11) provides some justification: if each randomly initialized network can be seen as a sample from a GP prior, then the ensemble approximates a form of Bayesian model averaging.
+
+For continual learning (Lecture~12), deep ensembles could be extended by using the current ensemble as a ``prior'' for new tasks, though this lacks the elegant sequential update $p(\theta\mid\mathcal{D}_{1:T}) \propto p(\mathcal{D}_T\mid\theta)\,p(\theta\mid\mathcal{D}_{1:T-1})$ of proper Bayesian approaches.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+\section{Implementation Details}
+
+The code is implemented in Python using JAX and follows patterns from the ASI labs. Key implementation choices:
+
+\begin{itemize}
+    \item \textbf{Framework:} JAX with \texttt{jax.numpy} for automatic differentiation (Tutorial~2).
+    \item \textbf{Architecture:} Single hidden layer MLP with 50 units and ReLU activation; two output heads for $\mu$ and $\log\sigma^2$.
+    \item \textbf{Variance parameterization:} We output $\log\sigma^2$ and apply softplus: $\sigma^2 = \log(1 + \exp(\cdot)) + 10^{-6}$, following the paper's recommendation.
+    \item \textbf{Optimizer:} Adam with learning rate $0.01$, batch size equal to full dataset (20 points).
+    \item \textbf{Ensemble:} $M=5$ networks, each initialized with different JAX PRNG keys.
+    \item \textbf{Prediction:} Combined via Eq.~\eqref{eq:ensemble_pred}.
+\end{itemize}
+
+The NLL loss function directly mirrors the Gaussian log-likelihood from Lab~1:
+\begin{verbatim}
+def nll_loss(params, x, y):
+    mu, log_var = network(params, x)
+    var = softplus(log_var) + 1e-6
+    return jnp.mean(0.5 * jnp.log(var) 
+                    + 0.5 * (y - mu)**2 / var)
+\end{verbatim}
+
+\section{Connection to Course Exercises}
+
+The following exercise sheets directly relate to concepts used in this paper:
+\begin{itemize}
+    \item \textbf{Preliminaries:} Probability review, Gaussian distributions, and expectations — foundational for the NLL loss and mixture-of-Gaussians combination.
+    \item \textbf{Linear Regression:} Bayesian linear regression with Gaussian likelihood and prior — the same Gaussian likelihood structure underlies the deep ensemble regression output.
+    \item \textbf{Approximate Inference:} Understanding why exact inference is intractable motivates the need for methods like deep ensembles.
+    \item \textbf{Variational Inference:} The ELBO and KL divergence — deep ensembles can be compared to VI as an alternative approach to posterior approximation.
+    \item \textbf{Classification:} Bayesian logistic regression and the softmax cross-entropy loss — the classification experiments in the paper use these concepts.
+    \item \textbf{Gaussian Processes:} The GP predictive variance grows away from data, which is the same qualitative behavior achieved by deep ensembles.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{plainnat}
+
+\begin{thebibliography}{10}
+
+\bibitem{lakshminarayanan2017}
+B.~Lakshminarayanan, A.~Pritzel, and C.~Blundell.
+\newblock Simple and scalable predictive uncertainty estimation using deep ensembles.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2017.
+
+\bibitem{gal2016dropout}
+Y.~Gal and Z.~Ghahramani.
+\newblock Dropout as a {B}ayesian approximation: Representing model uncertainty in deep learning.
+\newblock In \emph{ICML}, 2016.
+
+\bibitem{hernandez2015}
+J.~M. Hern{\'a}ndez-Lobato and R.~Adams.
+\newblock Probabilistic backpropagation for scalable learning of {B}ayesian neural networks.
+\newblock In \emph{ICML}, 2015.
+
+\bibitem{goodfellow2015}
+I.~J. Goodfellow, J.~Shlens, and C.~Szegedy.
+\newblock Explaining and harnessing adversarial examples.
+\newblock In \emph{ICLR}, 2015.
+
+\bibitem{gneiting2007}
+T.~Gneiting and A.~E. Raftery.
+\newblock Strictly proper scoring rules, prediction, and estimation.
+\newblock \emph{Journal of the American Statistical Association}, 102(477):359--378, 2007.
+
+\bibitem{neal1996}
+R.~M. Neal.
+\newblock \emph{Bayesian Learning for Neural Networks}.
+\newblock Springer, 1996.
+
+\bibitem{blundell2015}
+C.~Blundell, J.~Cornebise, K.~Kavukcuoglu, and D.~Wierstra.
+\newblock Weight uncertainty in neural networks.
+\newblock In \emph{ICML}, 2015.
+
+\end{thebibliography}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% REQUIRED SECTIONS (outside the 5-page limit)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\section*{AI Use Declaration}
+
+We used AI-assisted tools during this project in the following ways:
+
+\begin{itemize}
+    \item \textbf{Code assistance:} We used an AI coding assistant to help structure the JAX implementation, particularly for the Adam optimizer implementation from scratch and the ensemble prediction combination (Eq.~\ref{eq:ensemble_pred}). All generated code was reviewed, understood, and validated by us against the equations in the paper.
+    \item \textbf{Report writing:} AI was used to help with LaTeX formatting and to improve the clarity of some explanations. The technical content, analysis, and connections to the course material are our own.
+    \item \textbf{Debugging:} AI was used to help debug numerical issues (e.g., variance parameterization via softplus, numerical stability with $10^{-6}$ floor).
+\end{itemize}
+
+All AI-generated content was critically reviewed and modified to ensure correctness. We take full responsibility for the final submission.
+
+
+\section*{Work Distribution}
+
+% TODO: Fill in your actual names and distribution
+\begin{itemize}
+    \item \textbf{Author 1:} Paper summary (Sections 1--2), discussion and course connections (Section 4), LaTeX report writing.
+    \item \textbf{Author 2:} Code implementation (JAX experiment script, Jupyter notebook), experimental reproduction (Section 3), figure generation, repository setup.
+\end{itemize}
+
+Both authors reviewed and approved all sections of the report.
+
+
+\end{document}

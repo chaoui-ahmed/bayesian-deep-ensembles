@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<link href="../../../assets/media/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.37">
+
+  <meta name="author" content="Simone Rossi">
+  <title>Advanced Statistical Inference – Linear Regression</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../../../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../../../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../../../site_libs/revealjs/dist/theme/quarto-9a4cafec2c9d4c9d7f0a6a56aefe2a62.css">
+  <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-KWEG8R79VL"></script>
+
+  <script type="text/javascript">
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KWEG8R79VL', { 'anonymize_ip': true});
+  </script>
+  <link href="../../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../../../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script type="text/x-mathjax-config">
+  window.MathJax = {
+    loader: {load: ['[tex]/colorv2']},
+    tex: {packages: {'[+]': ['color']}}
+  };
+  </script>
+<meta property="og:title" content="Linear Regression – Advanced Statistical Inference">
+<meta property="og:description" content="Advanced Statistical Inference">
+<meta property="og:site_name" content="Advanced Statistical Inference">
+<meta name="twitter:title" content="Linear Regression – Advanced Statistical Inference">
+<meta name="twitter:description" content="Advanced Statistical Inference">
+<meta name="twitter:creator" content="@<twitter-handle>">
+<meta name="twitter:site" content="\@<twitter-handle>">
+<meta name="twitter:card" content="summary">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" data-background-color="#1c4587" class="quarto-title-block center">
+  <h1 class="title">Linear Regression</h1>
+  <p class="subtitle">Advanced Statistical Inference</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Simone Rossi 
+</div>
+        <p class="quarto-title-affiliation">
+            EURECOM
+          </p>
+    </div>
+</div>
+
+</section>
+<section>
+<section id="linear-regression" class="title-slide slide level1 center">
+<h1>Linear regression</h1>
+<p><span class="math display">\[
+\require{physics}
+\definecolor{input}{rgb}{0.42, 0.55, 0.74}
+\definecolor{params}{rgb}{0.51,0.70,0.40}
+\definecolor{output}{rgb}{0.843, 0.608, 0}
+\definecolor{vparams}{rgb}{0.58, 0, 0.83}
+\definecolor{noise}{rgb}{0.0, 0.48, 0.65}
+\definecolor{latent}{rgb}{0.8, 0.0, 0.8}
+\definecolor{function}{rgb}{0.75, 0.75, 0.12}
+\]</span></p>
+</section>
+<section id="objectives-for-today" class="slide level2">
+<h2>Objectives for today</h2>
+<ol type="1">
+<li>Review of linear regression</li>
+<li>Understand the probabilistic interpretation of (regularized) loss minimization</li>
+</ol>
+<p><em>Break</em></p>
+<ol start="3" type="1">
+<li>Introduction of Bayesian linear regression</li>
+<li>Compute the posterior distribution and make predictions</li>
+<li>Model selection and other properties of Bayesian linear regression</li>
+</ol>
+<p><em>Break</em></p>
+<ol start="6" type="1">
+<li>Class exercise on Bayesian inference for coin toss</li>
+</ol>
+</section>
+<section id="a-quick-recap-on-probability" class="slide level2">
+<h2>A quick recap on probability</h2>
+<p>Consider two continuous random variables <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span></p>
+<ul>
+<li>Sum rule (marginalization):</li>
+</ul>
+<p><span class="math display">\[
+p(x) = \int p(x, y) \dd y
+\]</span></p>
+<ul>
+<li>Product rule (conditioning):</li>
+</ul>
+<p><span class="math display">\[
+p(x, y) = p(x \mid y) p(y) = p(y \mid x) p(x)
+\]</span></p>
+<ul>
+<li>Bayes’ rule:</li>
+</ul>
+<p><span class="math display">\[
+p(x \mid y) = \frac{p(y \mid x) p(x)}{p(y)}
+\]</span></p>
+</section>
+<section class="slide level2">
+
+<p>Consider a random vector <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}\)</span> with <span class="math inline">\(D\)</span> components (<span class="math inline">\({\boldsymbol{z}}\in{\mathbb{R}}^D\)</span>)</p>
+<ul>
+<li>Chain rule:</li>
+</ul>
+<p><span class="math display">\[
+p({\boldsymbol{z}}) = p(z_1, z_2, \ldots, z_D) = p(z_1) p(z_2 \mid z_1) p(z_3 \mid z_1, z_2) \cdots p(z_D \mid z_1, z_2, \ldots, z_{D-1})
+\]</span></p>
+<p>If <span class="math inline">\(z_i\)</span> are independent, then</p>
+<p><span class="math display">\[
+p(z_1 \mid z_2, \ldots, z_{D-1}) = p(z_1)
+\]</span> and the chain rule becomes</p>
+<p><span class="math display">\[
+p({\boldsymbol{z}}) = p(z_1) p(z_2) \cdots p(z_D) = \prod_{d=1}^D p(z_d)
+\]</span></p>
+</section>
+<section id="section" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/curve_fitting?embed=true" width="1920" height="1080" id="curve-fitting" frameborder="0">
+</iframe>
+</section>
+<section id="definitions" class="slide level2">
+<h2>Definitions</h2>
+<ul>
+<li><strong>Input</strong>, features, covariates: <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}\in {\mathbb{R}}^D\)</span></li>
+</ul>
+<p><span class="math display">\[
+{\textcolor{input}{\boldsymbol{X}}}= \begin{bmatrix} {\textcolor{input}{\boldsymbol{x}}}_1 \\ \vdots \\ {\textcolor{input}{\boldsymbol{x}}}_N \end{bmatrix} \in {\mathbb{R}}^{N \times D} \quad \text{or with a bias term} \quad {\textcolor{input}{\boldsymbol{X}}}= \begin{bmatrix} {\boldsymbol{1}}&amp; {\textcolor{input}{\boldsymbol{x}}}_1 \\ \vdots &amp; \vdots \\ {\boldsymbol{1}}&amp; {\textcolor{input}{\boldsymbol{x}}}_N \end{bmatrix} \in {\mathbb{R}}^{N \times (D+1)}
+\]</span></p>
+<ul>
+<li><strong>Output</strong>, target, response: <span class="math inline">\(y \in {\mathbb{R}}\)</span></li>
+</ul>
+<p><span class="math display">\[
+{\textcolor{output}{\boldsymbol{y}}}= \begin{bmatrix} \textcolor{output}{y}_1 \\ \vdots \\ \textcolor{output}{y}_N \end{bmatrix} \in {\mathbb{R}}^N
+\]</span></p>
+<ul>
+<li><strong>Dataset</strong>: <span class="math inline">\({\mathcal{D}}= \{{\textcolor{input}{\boldsymbol{X}}}, {\textcolor{output}{\boldsymbol{y}}}\}\)</span></li>
+</ul>
+</section>
+<section id="regression" class="slide level2">
+<h2>Regression</h2>
+<ul>
+<li><strong>Objective</strong>: Learn a function <span class="math inline">\(f: {\mathbb{R}}^D \to {\mathbb{R}}\)</span></li>
+</ul>
+<p><strong>Linear models</strong> implement a linear combination of (basis) functions</p>
+<p><span class="math display">\[
+f({\textcolor{input}{\boldsymbol{x}}}) = \sum_{d=1}^D \textcolor{params}{w}_d \varphi_d({\textcolor{input}{\boldsymbol{x}}}) = {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{\varphi}}({\textcolor{input}{\boldsymbol{x}}})
+\]</span></p>
+<ul>
+<li><p><strong>Parameters</strong>: <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}= [\textcolor{params}{w}_1, \ldots, \textcolor{params}{w}_D]^\top\)</span></p></li>
+<li><p><strong>Basis functions</strong>: <span class="math inline">\({\boldsymbol{\varphi}}({\textcolor{input}{\boldsymbol{x}}}) = [\varphi_1({\textcolor{input}{\boldsymbol{x}}}), \ldots, \varphi_D({\textcolor{input}{\boldsymbol{x}}})]^\top\)</span></p></li>
+</ul>
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Important</strong></p>
+</div>
+<div class="callout-content">
+<p>Any model that can be written as a linear combination of parameters (<strong>not</strong> the input) is a linear model</p>
+</div>
+</div>
+</div>
+</section>
+<section id="linear-regression-1" class="slide level2">
+<h2>Linear regression</h2>
+<p>For simplicity, let’s consider linear functions</p>
+<p><span class="math display">\[
+f({\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{x}}}) = \sum_{d=1}^D \textcolor{params}{w}_d \textcolor{input}{x}_d = {\textcolor{params}{\boldsymbol{w}}}^\top {\textcolor{input}{\boldsymbol{x}}}
+\]</span></p>
+<ul>
+<li><strong>Objective</strong>: Find <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}\)</span> that minimizes the error</li>
+</ul>
+<p><span class="math display">\[
+{\mathcal{L}}({\textcolor{params}{\boldsymbol{w}}}) = \frac{1}{2} \sum_{n=1}^N (\textcolor{output}{y}_n - f({\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{x}}}_n))^2 = \frac{1}{2} \norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}}_2^2
+\]</span></p>
+</section>
+<section id="least-squares-solution" class="slide level2">
+<h2>Least squares solution</h2>
+<p><span class="math display">\[
+{\mathcal{L}}({\textcolor{params}{\boldsymbol{w}}}) = \frac{1}{2} \norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}}_2^2
+\]</span></p>
+<ul>
+<li><p><strong>Gradient</strong>: <span class="math inline">\(\nabla_{{\textcolor{params}{\boldsymbol{w}}}} {\mathcal{L}}({\textcolor{params}{\boldsymbol{w}}}) = -{\textcolor{input}{\boldsymbol{X}}}^\top ({\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}) = 0\)</span></p></li>
+<li><p><strong>Solution</strong>: <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}^* = ({\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}})^{-1} {\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{output}{\boldsymbol{y}}}\)</span></p></li>
+</ul>
+<div title="Exercise">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Exercise</strong></p>
+</div>
+<div class="callout-content">
+<p>Implement the least squares solution for linear regression using Cholesky decomposition and back-substitution (ref <a href="01_revision_linear_algebra.html#cholesky-decomposition">revision of linear algebra</a>)</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="section-1" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/loss_likelihood?embed=true" width="1920" height="1080" id="loss-likelihood" frameborder="0">
+</iframe>
+</section>
+<section id="probabilistic-interpretation-of-linear-regression" class="slide level2">
+<h2>Probabilistic interpretation of linear regression</h2>
+<p>Minimizing the loss is equivalent to maximizing the likelihood of the data under a Gaussian noise model</p>
+<p><span class="math display">\[
+\exp(-\gamma {\mathcal{L}}_i) \propto {\mathcal{N}}\left({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}, \gamma^{-1} {\boldsymbol{I}}\right)
+\]</span></p>
+<p><strong>(Implicit) Assumption</strong>: Data is generated by a linear model with <strong>Gaussian noise</strong> <span class="math inline">\({\textcolor{noise}{\varepsilon}}\sim {\mathcal{N}}(0, \sigma^2)\)</span> independent across samples (with <span class="math inline">\(\sigma^2=\gamma^{-1}\)</span>).</p>
+<p><span class="math display">\[
+\textcolor{output}{y}_n = {\textcolor{params}{\boldsymbol{w}}}^\top {\textcolor{input}{\boldsymbol{x}}}_n + {\textcolor{noise}{\varepsilon}}_n, \quad {\textcolor{noise}{\varepsilon}}_n \sim {\mathcal{N}}(0, \sigma^2)
+\]</span></p>
+</section>
+<section id="maximum-likelihood-estimation" class="slide level2">
+<h2>Maximum likelihood estimation</h2>
+<p><strong>Maximum likelihood estimation</strong> is solving</p>
+<p><span class="math display">\[
+\arg\max_{{\textcolor{params}{\boldsymbol{w}}}} \prod_{i=1}^N \underbrace{{\mathcal{N}}\left(\textcolor{output}{y}_i \mid {\textcolor{params}{\boldsymbol{w}}}^\top {\textcolor{input}{\boldsymbol{x}}}_i, \sigma^2 \right)}_{p(\textcolor{output}{y}_i \mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{x}}}_i)}
+\]</span></p>
+<p><span class="math inline">\(p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) = \prod_{i=1}^N p(\textcolor{output}{y}_i \mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{x}}}_i)\)</span> is the <strong>likelihood</strong> of the data given the model</p>
+<div title="Tip">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p>We <em>never</em> maximize the likelihood directly, but the log-likelihood</p>
+<p><span class="math display">\[
+\arg\max_{{\textcolor{params}{\boldsymbol{w}}}} \sum_{i=1}^N \log {\mathcal{N}}\left(\textcolor{output}{y}_i \mid {\textcolor{params}{\boldsymbol{w}}}^\top {\textcolor{input}{\boldsymbol{x}}}_i, \sigma^2 \right)
+\]</span></p>
+<p>Because log is monotonic and concave, the optimum value is the same and numerically more stable</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="likelihood-is-not-a-probability" class="slide level2">
+<h2>Likelihood is not a probability</h2>
+<ul>
+<li>The likelihood function is not a probability distribution.</li>
+<li>The likelihood can take any non-negative value, not just values between 0 and 1.</li>
+<li>It represents the density of the data (<span class="math inline">\({\textcolor{output}{\boldsymbol{y}}}\)</span>) given the model (<span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}\)</span>).</li>
+</ul>
+<p><strong>Key insight</strong>:</p>
+<ul>
+<li><strong>Probability</strong>: Fix the parameters, vary the data. It answers “what data might we see?”</li>
+<li><strong>Likelihood</strong>: Fix the data, vary the parameters. It answers “which parameters best explain the data?”</li>
+</ul>
+</section>
+<section id="section-2" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/likelihood?embed=true" width="1920" height="1080" id="likelihood" frameborder="0">
+</iframe>
+</section>
+<section id="properties-of-maximum-likelihood-estimation" class="slide level2">
+<h2>Properties of maximum likelihood estimation</h2>
+<ul>
+<li><strong>Consistency</strong>: As <span class="math inline">\(N \to \infty\)</span>, the MLE converges to the true parameter value</li>
+</ul>
+<div title="Note">
+<div class="callout callout-warning callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Note</strong></p>
+</div>
+<div class="callout-content">
+<p>The consistency property makes sense if the model is correct (e.g.&nbsp;the data is generated by a linear model with Gaussian noise). But this is an assumption that is often not met in practice.</p>
+</div>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Unbiasedness</strong>: The expected value of the MLE is <em>unbiased</em></li>
+</ul>
+<p><span class="math display">\[
+{\mathbb{E}}_{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}})}[\hat{{\textcolor{params}{\boldsymbol{w}}}}] = {\textcolor{params}{\boldsymbol{w}}}
+\]</span></p>
+</section>
+<section id="section-3" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/mle_unbiased?embed=true" width="1920" height="1080" id="mle-unbiased" frameborder="0">
+</iframe>
+</section>
+<section id="proof-that-mle-is-unbiased" class="slide level2">
+<h2>Proof that MLE is unbiased</h2>
+<p>The proof is quite easy</p>
+<p><span class="math display">\[
+\begin{aligned}
+{\mathbb{E}}_{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}})}[\hat{{\textcolor{params}{\boldsymbol{w}}}}] &amp;= \int \hat{{\textcolor{params}{\boldsymbol{w}}}} p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) \dd {\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= \int ({\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}})^{-1} {\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{output}{\boldsymbol{y}}}{\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}, \sigma^2 {\boldsymbol{I}}) \dd {\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= ({\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}})^{-1} {\textcolor{input}{\boldsymbol{X}}}^\top \int {\textcolor{output}{\boldsymbol{y}}}{\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}, \sigma^2 {\boldsymbol{I}}) \dd {\textcolor{output}{\boldsymbol{y}}}\\
+&amp;= ({\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}})^{-1} {\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}= {\textcolor{params}{\boldsymbol{w}}}
+\end{aligned}
+\]</span></p>
+</section>
+<section id="regularization" class="slide level2">
+<h2>Regularization</h2>
+<p><strong>Ridge regression</strong> adds a penalty term to the loss function</p>
+<p><span class="math display">\[
+{\mathcal{L}}({\textcolor{params}{\boldsymbol{w}}}) = \frac{1}{2} \norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}}_2^2 + \frac{\lambda}{2} \norm{{\textcolor{params}{\boldsymbol{w}}}}_2^2
+\]</span></p>
+<ul>
+<li><p><strong>Objective</strong>: Find <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}\)</span> that minimizes the error while keeping the parameters small</p></li>
+<li><p><strong>Solution</strong>: <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}^* = ({\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}}+ \lambda {\boldsymbol{I}})^{-1} {\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{output}{\boldsymbol{y}}}\)</span></p></li>
+</ul>
+</section>
+<section id="probabilistic-interpretation-of-regularization" class="slide level2">
+<h2>Probabilistic interpretation of regularization</h2>
+<ul>
+<li><strong>Assumption</strong>: Data is generated by a linear model with Gaussian noise independent across samples</li>
+</ul>
+<p>Same trick as before (exponential of the negative loss)</p>
+<p><span class="math display">\[
+\begin{aligned}
+\exp(-\gamma {\mathcal{L}}) &amp;= \exp\left(-\frac \gamma 2 \norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}}_2^2 - \frac \gamma 2 \lambda \norm{{\textcolor{params}{\boldsymbol{w}}}}_2^2\right) = \\
+&amp;= \exp\left(-\frac \gamma 2 \norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}}_2^2\right) \exp\left(-\frac \gamma 2 \lambda \norm{{\textcolor{params}{\boldsymbol{w}}}}_2^2\right) = \\
+&amp;\propto {\mathcal{N}}\left({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}, \gamma^{-1} {\boldsymbol{I}}\right) {\mathcal{N}}\left({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{0}}, (\gamma \lambda)^{-1} {\boldsymbol{I}}\right)
+\end{aligned}
+\]</span></p>
+<p>Minimizing the loss is equivalent to maximizing the product of two Gaussian distributions (likelihood and prior).</p>
+<div class="fragment highlight-red">
+<p>We are getting closer to Bayesian inference!</p>
+</div>
+</section></section>
+<section>
+<section id="bayesian-linear-regression" class="title-slide slide level1 center">
+<h1>Bayesian linear regression</h1>
+
+</section>
+<section id="bayesian-inference" class="slide level2">
+<h2>Bayesian inference</h2>
+<p><strong>Bayesian inference</strong> allows to “transform” a prior distribution over the parameters into a posterior <strong>after</strong> observing the data</p>
+<p>Bayes’ rule :</p>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = \frac{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) p({\textcolor{params}{\boldsymbol{w}}})}{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}})}
+\]</span></p>
+<ul>
+<li class="fragment"><strong>Prior</strong>: <span class="math inline">\(p({\textcolor{params}{\boldsymbol{w}}})\)</span>
+<ul>
+<li class="fragment">Encodes our beliefs about the parameters <strong>before</strong> observing the data</li>
+</ul></li>
+<li class="fragment"><strong>Likelihod</strong>: <span class="math inline">\(p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}})\)</span>
+<ul>
+<li class="fragment">Encodes our model of the data</li>
+</ul></li>
+<li class="fragment"><strong>Posterior</strong>: <span class="math inline">\(p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}})\)</span>
+<ul>
+<li class="fragment">Encodes our beliefs about the parameters <strong>after</strong> observing the data (e.g.&nbsp;conditioned on the data)</li>
+</ul></li>
+<li class="fragment"><strong>Evidence</strong>: <span class="math inline">\(p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}})\)</span>
+<ul>
+<li class="fragment">Normalizing constant, ensures that <span class="math inline">\(\int p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) \dd {\textcolor{params}{\boldsymbol{w}}}= 1\)</span></li>
+</ul></li>
+</ul>
+</section>
+<section id="bayesian-linear-regression---likelihood-and-prior" class="slide level2">
+<h2>Bayesian linear regression - Likelihood and prior</h2>
+<p>Modeling observation as noisy realization of a linear combination of the features As before, we assume a Gaussian likelihood</p>
+<p><span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}, \sigma^2 {\boldsymbol{I}})
+\]</span></p>
+<p>For the prior, we use a Gaussian distribution over the model parameters</p>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}) = {\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{0}}, {\boldsymbol{S}})
+\]</span></p>
+<p>In practice, we often use a diagonal covariance matrix <span class="math inline">\({\boldsymbol{S}}= \sigma_{\textcolor{params}{\boldsymbol{w}}}^2 {\boldsymbol{I}}\)</span></p>
+</section>
+<section id="when-can-we-compute-the-posterior" class="slide level2">
+<h2>When can we compute the posterior?</h2>
+<div title="Definition">
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Definition</strong></p>
+</div>
+<div class="callout-content">
+<p>A prior is <strong>conjugate</strong> to a likelihood if the posterior is in the same family as the prior.</p>
+</div>
+</div>
+</div>
+</div>
+<p>Only a few conjugate priors exist, but they are very useful.</p>
+<p>Examples:</p>
+<ul>
+<li>Gaussian likelihood and Gaussian prior <span class="math inline">\(\Rightarrow\)</span> Gaussian posterior</li>
+<li>Binomial likelihood and Beta prior <span class="math inline">\(\Rightarrow\)</span> Beta posterior</li>
+</ul>
+<p>Full table available on <a href="https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions">wikipedia</a></p>
+</section>
+<section id="why-is-this-useful" class="slide level2">
+<h2>Why is this useful?</h2>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = \frac{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) p({\textcolor{params}{\boldsymbol{w}}})}{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}})}
+\]</span></p>
+<ul>
+<li><strong>Generally</strong> the posterior is <strong>intractable</strong> to compute
+<ul>
+<li>We don’t the form of the posterior <span class="math inline">\(p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}})\)</span></li>
+<li>The evidence <span class="math inline">\(p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}})\)</span> is an integral
+<ul>
+<li>without closed form solution</li>
+<li>high-dimensional and computationally intractable to compute numerically</li>
+</ul></li>
+</ul></li>
+</ul>
+<div class="fragment">
+<ul>
+<li><strong>Analytical solution</strong> thanks to conjugacy:
+<ul>
+<li>We know the form of the posterior</li>
+<li>We know the form of the normalization constant</li>
+<li>We don’t need to compute the evidence, just some algebra to get the posterior</li>
+</ul></li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+
+<p>Back to our model, the posterior must be Gaussian <span class="math inline">\({\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{\mu}}, {\boldsymbol{\Sigma}})\)</span></p>
+<p>Ignoring constant terms in <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) &amp;\propto \exp\left(-\frac 1 2({\textcolor{params}{\boldsymbol{w}}}- {\boldsymbol{\mu}})^\top {\boldsymbol{\Sigma}}^{-1} ({\textcolor{params}{\boldsymbol{w}}}- {\boldsymbol{\mu}}) \right) \\
+&amp;= \exp\left(-\frac 1 2 \left( {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{\Sigma}}^{-1} {\textcolor{params}{\boldsymbol{w}}}- 2 {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{\Sigma}}^{-1} {\boldsymbol{\mu}}+ {\boldsymbol{\mu}}^\top {\boldsymbol{\Sigma}}^{-1} {\boldsymbol{\mu}}\right)\right)\\
+&amp;\propto \exp\left(-\frac 1 2 \left( {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{\Sigma}}^{-1} {\textcolor{params}{\boldsymbol{w}}}- 2 {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{\Sigma}}^{-1} {\boldsymbol{\mu}}\right)\right)
+\end{aligned}
+\]</span></p>
+</section>
+<section class="slide level2">
+
+<p>From the likelihood and prior, we can write the posterior as</p>
+<p><span class="math display">\[
+\begin{aligned}
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}})p({\textcolor{params}{\boldsymbol{w}}}) &amp;\propto \exp\left(-\frac 1 {2\sigma^2} \norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}}_2^2 - \frac 1 2 {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{S}}^{-1} {\textcolor{params}{\boldsymbol{w}}}\right) \\
+&amp;\propto \exp\left(-\frac 1 2 \left( {\textcolor{params}{\boldsymbol{w}}}^\top \left(\frac 1 {\sigma^2} {\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}}+ {\boldsymbol{S}}^{-1}\right) {\textcolor{params}{\boldsymbol{w}}}- \frac 2 {\sigma^2}{\textcolor{params}{\boldsymbol{w}}}^\top  {\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{output}{\boldsymbol{y}}}\right)\right)
+\end{aligned}
+\]</span></p>
+<div class="fragment">
+<p>From previous slide,</p>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) \propto \exp\left(-\frac 1 2 \left( {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{\Sigma}}^{-1} {\textcolor{params}{\boldsymbol{w}}}- 2 {\textcolor{params}{\boldsymbol{w}}}^\top {\boldsymbol{\Sigma}}^{-1} {\boldsymbol{\mu}}\right)\right)
+\]</span></p>
+<p>We can identify the posterior mean and covariance</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Posterior covariance</strong> <span class="math display">\[
+{\boldsymbol{\Sigma}}= \left(\frac 1 {\sigma^2} {\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{input}{\boldsymbol{X}}}+ {\boldsymbol{S}}^{-1}\right)^{-1}
+\]</span></p>
+</div><div class="column" style="width:50%;">
+<p><strong>Posterior mean</strong> <span class="math display">\[
+{\boldsymbol{\mu}}= \frac 1 {\sigma^2} {\boldsymbol{\Sigma}}{\textcolor{input}{\boldsymbol{X}}}^\top {\textcolor{output}{\boldsymbol{y}}}
+\]</span></p>
+</div></div>
+</div>
+</section>
+<section id="section-4" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/bayesian_linear_regression?embed=true" width="1920" height="1080" id="bayesian-linear-regression" frameborder="0">
+</iframe>
+</section>
+<section id="how-to-make-predictions" class="slide level2">
+<h2>How to make predictions?</h2>
+<p>The posterior distribution <span class="math inline">\(p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}})\)</span> gives us the uncertainty about the parameters. <strong>How can we use it to make predictions?</strong></p>
+<div class="fragment">
+<p>The predictive distribution is the distribution of the target variable <span class="math inline">\(\textcolor{output}{y}_\star\)</span> given the input <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}_\star\)</span></p>
+<p>Obtained by <strong>marginalizing</strong> the parameters using the posterior</p>
+<p><span class="math display">\[
+p(\textcolor{output}{y}_\star \mid {\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = \int p(y_\star \mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{x}}}_\star ) p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) \dd {\textcolor{params}{\boldsymbol{w}}}
+\]</span></p>
+</div>
+<div class="fragment">
+<p>For linear regression, the predictive distribution is Gaussian</p>
+<p><span class="math display">\[
+p(\textcolor{output}{y}_\star \mid {\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}(\textcolor{output}{y}_\star \mid {\boldsymbol{\mu}}^\top {\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{input}{\boldsymbol{x}}}_\star^\top {\boldsymbol{\Sigma}}{\textcolor{input}{\boldsymbol{x}}}_\star + \sigma^2)
+\]</span></p>
+</div>
+</section>
+<section id="section-5" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/predictive_distribution?embed=true" width="1920" height="1080" id="predictive-distribution" frameborder="0">
+</iframe>
+</section>
+<section id="bayesian-linear-regression-with-basis-functions" class="slide level2">
+<h2>Bayesian linear regression with basis functions</h2>
+<p>The same approach can be used with non-linear basis functions</p>
+<p>Transform the input <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}\)</span> using a non-linear function <span class="math inline">\(\varphi({\textcolor{input}{\boldsymbol{x}}})\)</span></p>
+<p><span class="math display">\[
+{\textcolor{input}{\boldsymbol{x}}}\to \varphi({\textcolor{input}{\boldsymbol{x}}}) = [\varphi_1({\textcolor{input}{\boldsymbol{x}}}), \ldots, \varphi_D({\textcolor{input}{\boldsymbol{x}}})]^\top
+\]</span></p>
+<p>For convenience, define <span class="math inline">\({\textcolor{input}{\boldsymbol{\Phi}}}= [\varphi({\textcolor{input}{\boldsymbol{x}}}_1), \ldots, \varphi({\textcolor{input}{\boldsymbol{x}}}_N)]^\top\)</span></p>
+<p><strong>Posterior</strong></p>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{\Phi}}}) = {\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{\mu}}, {\boldsymbol{\Sigma}}) \quad \text{with} \quad {\boldsymbol{\mu}}= \frac 1 {\sigma^2} {\boldsymbol{\Sigma}}{\textcolor{input}{\boldsymbol{\Phi}}}^\top {\textcolor{output}{\boldsymbol{y}}}\quad \text{and} \quad {\boldsymbol{\Sigma}}= \left(\frac 1 {\sigma^2} {\textcolor{input}{\boldsymbol{\Phi}}}^\top {\textcolor{input}{\boldsymbol{\Phi}}}+ {\boldsymbol{S}}^{-1}\right)^{-1}
+\]</span></p>
+<p><strong>Predictive distribution</strong></p>
+<p><span class="math display">\[
+p(y_\star \mid {\textcolor{input}{\boldsymbol{x}}}_\star, {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{\Phi}}}) = {\mathcal{N}}(y_\star \mid {\boldsymbol{\mu}}^\top \varphi({\textcolor{input}{\boldsymbol{x}}}_\star), \varphi({\textcolor{input}{\boldsymbol{x}}}_\star)^\top {\boldsymbol{\Sigma}}\varphi({\textcolor{input}{\boldsymbol{x}}}_\star) + \sigma^2)
+\]</span></p>
+</section>
+<section id="section-6" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/regression_basis_functions?embed=true" width="1920" height="800" id="bayesian-basis-functions" frameborder="0">
+</iframe>
+<p>Where we used polynomial basis functions <span class="math inline">\(\varphi_i({\textcolor{input}{\boldsymbol{x}}}) = \textcolor{input}{x}^i\)</span>: <span class="math inline">\(f({\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{x}}}) = \sum_{i=0}^K \textcolor{params}{w}_i \textcolor{input}{x}^i\)</span></p>
+</section></section>
+<section>
+<section id="analysis-of-bayesian-linear-regression" class="title-slide slide level1 center">
+<h1>Analysis of Bayesian linear regression</h1>
+
+</section>
+<section id="connection-with-ridge-regression-and-maximum-a-posteriori-estimation" class="slide level2">
+<h2>Connection with ridge regression and maximum a posteriori estimation</h2>
+<p><strong>Maximum a posteriori estimation</strong> (MAP) computes the mode of the posterior distribution <span class="math inline">\(\arg\max p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}})\)</span>. For Gaussians, it is the same as the mean</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><span class="math display">\[
+\arg\min {\mathcal{L}}({\textcolor{params}{\boldsymbol{w}}}) = \frac{1}{2} \norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}}_2^2 + \frac{\lambda}{2} \norm{{\textcolor{params}{\boldsymbol{w}}}}_2^2
+\]</span></p>
+</div><div class="column" style="width:50%;">
+<p><span class="math display">\[
+\arg\max p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{\mu}}, {\boldsymbol{\Sigma}})
+\]</span></p>
+</div></div>
+<p>If <span class="math inline">\(\lambda = \sigma^2 / \sigma_{\textcolor{params}{\boldsymbol{w}}}^2\)</span>, the <strong>ridge regression</strong> solution is equivalent to the MAP solution with a Gaussian prior</p>
+</section>
+<section id="effect-of-the-prior" class="slide level2">
+<h2>Effect of the prior</h2>
+<ul>
+<li>Prior encodes our beliefs about the parameters before observing the data.</li>
+<li>Prior effect diminishes with more data</li>
+<li>When we don’t have much data, the prior can have a strong effect on the posterior</li>
+</ul>
+<div class="fragment">
+<p><strong>Question</strong>: How do we choose the prior?</p>
+<ol type="1">
+<li>Data type:
+<ul>
+<li>Real-values: Gaussian prior</li>
+<li>Positive data: Log-normal prior, Gamma prior, etc.</li>
+<li>0-1 data: Beta prior</li>
+<li>Data summing to 1: Dirichlet prior</li>
+</ul></li>
+<li>Expert knowledge</li>
+<li>Computational convenience</li>
+</ol>
+</div>
+</section>
+<section id="section-7" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/prior_data_effect?embed=true" width="1920" height="1080" id="prior-data-effect" frameborder="0">
+</iframe>
+</section>
+<section id="model-selection" class="slide level2">
+<h2>Model selection</h2>
+<p>We can now get a solution for the linear regression problem (Bayesian and not) but we have to choose the model</p>
+<p><strong>Questions</strong>:</p>
+<ul>
+<li>What is the best model for the data?</li>
+<li>How many basis functions should we use?</li>
+<li>How to avoid overfitting?</li>
+</ul>
+<p>Attempted to choose the model based on the likelihood of the data. Is this a good idea?</p>
+<p><strong>NO!</strong></p>
+<ul>
+<li>Higher complexity models will always have higher likelihood …</li>
+<li>… but they will also overfit the data and generalize poorly</li>
+</ul>
+</section>
+<section id="section-8" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/model_selection?embed=true" width="1920" height="1080" id="model-selection" frameborder="0">
+</iframe>
+</section>
+<section id="model-selection---cross-validation" class="slide level2">
+<h2>Model selection - Cross-validation</h2>
+<ul>
+<li><p><strong>Cross-validation</strong>: Split the data into training and validation sets</p></li>
+<li><p>Solve the model with the training set and evaluate the performance on the validation set</p></li>
+<li><p>(Optional) Repeat the process for different splits of the data</p></li>
+<li><p>Choose the model that performs best on the validation set</p></li>
+</ul>
+<div class="columns">
+<div class="column" style="width:50%;">
+<div title="Pros">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Pros</strong></p>
+</div>
+<div class="callout-content">
+<ul>
+<li>Simple</li>
+<li>Works well in practice</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:50%;">
+<div title="Cons">
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Cons</strong></p>
+</div>
+<div class="callout-content">
+<ul>
+<li>Computationally expensive</li>
+<li>Requires multiple runs</li>
+<li>Works poorly with small datasets</li>
+<li><strong>Violates</strong> the <strong>likelihood principle</strong></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section id="likelihood-principle" class="slide level2">
+<h2>Likelihood principle</h2>
+<ul>
+<li><p><strong>Likelihood principle</strong>: All the information from the data is contained in the likelihood function</p></li>
+<li><p><strong>Consequence</strong>: You should <em>not</em> base your inference on data that you <em>could have</em> observed but did not</p></li>
+<li><p><strong>Cross-validation</strong> (and other frequentist methods) violate the likelihood principle</p></li>
+</ul>
+<div title="Note">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Note</strong></p>
+</div>
+<div class="callout-content">
+<ul>
+<li>This is more of a philosophical point than a practical one.</li>
+<li>It’s not a <em>rule of nature</em> but an argument that Bayesian methods are more <em>principled</em>.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="marginal-likelihood" class="slide level2">
+<h2>Marginal likelihood</h2>
+<p><span class="math display">\[
+p({\textcolor{params}{\boldsymbol{w}}}\mid {\textcolor{output}{\boldsymbol{y}}}, {\textcolor{input}{\boldsymbol{X}}}) = \frac{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) p({\textcolor{params}{\boldsymbol{w}}})}{p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}})}
+\]</span></p>
+<p>The <strong>marginal likelihood</strong> is the normalization constant of the posterior distribution</p>
+<p><span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}) = \int p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) p({\textcolor{params}{\boldsymbol{w}}}) \dd {\textcolor{params}{\boldsymbol{w}}}
+\]</span></p>
+<ul>
+<li><p>We are averaging the likelihood over <strong>all possible values</strong> of the parameters from the prior</p></li>
+<li><p>It tells us how likely the data is under the model</p></li>
+</ul>
+</section>
+<section class="slide level2">
+
+<p>Let’s be explicit about the model in the marginal likelihood</p>
+<p><span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}, \textcolor{vparams}{\boldsymbol{\mathcal{M}}}) = \int p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}, \textcolor{vparams}{\boldsymbol{\mathcal{M}}}) p({\textcolor{params}{\boldsymbol{w}}}\mid \textcolor{vparams}{\boldsymbol{\mathcal{M}}}) \dd {\textcolor{params}{\boldsymbol{w}}}
+\]</span></p>
+<p>where <span class="math inline">\(\textcolor{vparams}{\boldsymbol{\mathcal{M}}}\)</span> is the model (e.g.&nbsp;polynomial degree) and <span class="math inline">\(p({\textcolor{params}{\boldsymbol{w}}}\mid \textcolor{vparams}{\boldsymbol{\mathcal{M}}})\)</span> is the prior over the parameters for the model <span class="math inline">\(\textcolor{vparams}{\boldsymbol{\mathcal{M}}}\)</span>.</p>
+<ul>
+<li>Recipe for <strong>Bayesian model selection</strong>:</li>
+</ul>
+<p><span class="math display">\[
+\widehat{\textcolor{vparams}{\boldsymbol{\mathcal{M}}}} = \arg\max_{\textcolor{vparams}{\boldsymbol{\mathcal{M}}}} p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}, \textcolor{vparams}{\boldsymbol{\mathcal{M}}})
+\]</span></p>
+<p>This is also known as <strong>Type II maximum likelihood</strong> or <strong>evidence maximization</strong></p>
+</section>
+<section id="model-selection-with-bayesian-linear-regression" class="slide level2">
+<h2>Model selection with Bayesian linear regression</h2>
+<p>Given:</p>
+<ul>
+<li><em>Likelihood</em>: <span class="math inline">\(p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{params}{\boldsymbol{w}}}, {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\textcolor{params}{\boldsymbol{w}}}, \sigma^2 {\boldsymbol{I}})\)</span></li>
+<li><em>Prior</em>: <span class="math inline">\(p({\textcolor{params}{\boldsymbol{w}}}\mid m) = {\mathcal{N}}({\textcolor{params}{\boldsymbol{w}}}\mid {\boldsymbol{\mu}}_p, {\boldsymbol{\Sigma}}_p)\)</span></li>
+</ul>
+<p>The <strong>marginal likelihood</strong> is a Gaussian</p>
+<p><span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}) = {\mathcal{N}}({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}{\boldsymbol{\mu}}_p, {\textcolor{input}{\boldsymbol{X}}}{\boldsymbol{\Sigma}}_p {\textcolor{input}{\boldsymbol{X}}}^\top + \sigma^2 {\boldsymbol{I}})
+\]</span></p>
+<div class="highlight-red">
+<p>It does NOT depend on the parameters <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}\)</span> but only on the model!</p>
+</div>
+</section>
+<section id="section-9" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/model_selection?embed=true" width="1920" height="1080" id="model-selection-bayesian" frameborder="0">
+</iframe>
+</section>
+<section id="why-does-it-work-the-bayesian-occams-razor" class="slide level2">
+<h2>Why does it work? The Bayesian Occam’s razor</h2>
+<p>Does <span class="math inline">\(p({\textcolor{output}{\boldsymbol{y}}}\mid {\textcolor{input}{\boldsymbol{X}}}, \textcolor{vparams}{\boldsymbol{\mathcal{M}}})\)</span> favor complex models? <strong>No!</strong></p>
+<ul>
+<li>We <em>marginalize</em> over the parameters, not <em>maximize</em> them</li>
+<li>The marginal likelihood penalizes complex models that don’t fit the data well</li>
+</ul>
+<p>This is known as the <strong>Bayesian Occam’s razor</strong>: the simplest model that explains the data is the best</p>
+<div title="Intuition">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Intuition</strong></p>
+</div>
+<div class="callout-content">
+<p>Apply chain rule to the marginal likelihood (drop all dependencies): <span class="math display">\[
+p({\textcolor{output}{\boldsymbol{y}}}) = p(\textcolor{output}{y}_1) p(\textcolor{output}{y}_2 \mid \textcolor{output}{y}_1) p(\textcolor{output}{y}_3 \mid \textcolor{output}{y}_1, \textcolor{output}{y}_2) \ldots p(\textcolor{output}{y}_N \mid \textcolor{output}{y}_1, \ldots, \textcolor{output}{y}_{N-1})
+\]</span></p>
+<p>or equivalently <span class="math display">\[
+\log p({\textcolor{output}{\boldsymbol{y}}}) = \log p(\textcolor{output}{y}_1) + \log p(\textcolor{output}{y}_2 \mid \textcolor{output}{y}_1) + \log p(\textcolor{output}{y}_3 \mid \textcolor{output}{y}_1, \textcolor{output}{y}_2) + \ldots + \log p(\textcolor{output}{y}_N \mid \textcolor{output}{y}_1, \ldots, \textcolor{output}{y}_{N-1})
+\]</span></p>
+<ul>
+<li>If the model is too complex, it will predict early data points well but later data points poorly</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="section-10" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/occams_razor?embed=true" width="1920" height="1080" id="occams-razor" frameborder="0">
+</iframe>
+</section>
+<section id="estimating-the-noise-variance" class="slide level2">
+<h2>Estimating the noise variance</h2>
+<p>So far, we treated <span class="math inline">\(\sigma^2\)</span> as known. <span class="purple">Can we estimate it from data?</span></p>
+<p>Remember: in our model assumption, the data is generated by a linear model with Gaussian noise <span class="math display">\[
+\textcolor{output}{y}_n = {\textcolor{params}{\boldsymbol{w}}}^\top {\textcolor{input}{\boldsymbol{x}}}_n + {\textcolor{noise}{\varepsilon}}_n, \quad {\textcolor{noise}{\varepsilon}}_n \sim {\mathcal{N}}(0, \sigma^2)
+\]</span></p>
+</section>
+<section id="maximum-likelihood-estimate-of-sigma2" class="slide level2">
+<h2>Maximum likelihood estimate of <span class="math inline">\(\sigma^2\)</span></h2>
+<p>Using <span class="math inline">\(\hat{{\textcolor{params}{\boldsymbol{w}}}}_{\mathrm{ML}} = ({\textcolor{input}{\boldsymbol{X}}}^\top{\textcolor{input}{\boldsymbol{X}}})^{-1}{\textcolor{input}{\boldsymbol{X}}}^\top{\textcolor{output}{\boldsymbol{y}}}\)</span> and maximizing <span class="math display">\[
+\log p({\textcolor{output}{\boldsymbol{y}}}\mid \hat{{\textcolor{params}{\boldsymbol{w}}}}_{\mathrm{ML}}, \sigma^2, {\textcolor{input}{\boldsymbol{X}}})
+\]</span> we get <span class="math display">\[
+\hat{\sigma}_{\mathrm{ML}}^2 = \frac{1}{N}\norm{{\textcolor{output}{\boldsymbol{y}}}- {\textcolor{input}{\boldsymbol{X}}}\hat{{\textcolor{params}{\boldsymbol{w}}}}_{\mathrm{ML}}}_2^2
+\]</span></p>
+<div title="Bias of the ML estimator">
+<div class="callout callout-warning callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Bias of the ML estimator</strong></p>
+</div>
+<div class="callout-content">
+<p>For finite <span class="math inline">\(N\)</span>, this estimator is biased downward: <span class="math display">\[
+{\mathbb{E}}[\hat{\sigma}_{\mathrm{ML}}^2] = \frac{N-D}{N}\sigma^2 = \sigma^2 - \frac{D}{N}\sigma^2
+\]</span> because <span class="math inline">\(D\)</span> degrees of freedom are used to estimate <span class="math inline">\({\textcolor{params}{\boldsymbol{w}}}\)</span>.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="a-more-flexible-noise-model" class="slide level2">
+<h2>A more flexible noise model</h2>
+<ul>
+<li><p>So far: same variance for all points</p></li>
+<li><p>But this is a <strong>modeling assumption</strong> that might not be realistic in many cases.</p></li>
+<li><p><span class="purple">How can we model more flexible noise?</span></p></li>
+</ul>
+<div class="fragment">
+<p><strong>Heteroskedastic model</strong>: <span class="math display">\[
+{\textcolor{noise}{\varepsilon}}_n \sim {\mathcal{N}}(0, \sigma_n^2)
+\]</span></p>
+<p>with <span class="math inline">\(\sigma_n^2\)</span> that can vary across samples (e.g.&nbsp;as a function of the input <span class="math inline">\({\textcolor{input}{\boldsymbol{x}}}_n\)</span>)</p>
+</div>
+</section>
+<section id="section-11" class="slide level2">
+<h2></h2>
+<iframe src="https://srossi93-asi.hf.space/heteroskedastic_noise?embed=true" width="1920" height="800" id="heteroskedastic-noise" frameborder="0">
+</iframe>
+<p>Solving this model is more complex, unless we make additional assumptions on how <span class="math inline">\(\sigma_n^2\)</span> varies across samples (e.g.&nbsp;linear function of the input).</p>
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../../../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../../../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../../../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': false,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href="https://eurecom-ds.github.io/asi/editions/2026/slides/\&quot;#\"" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":false},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'fast',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1920,
+
+        height: 1080,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 5.0e-2,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
