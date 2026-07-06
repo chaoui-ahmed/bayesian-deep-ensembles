@@ -1,71 +1,68 @@
-# 🔬 Bayesian Machine Learning & Deep Ensembles Research
+# Deep Ensembles for Predictive Uncertainty
 
-[![Course](https://img.shields.io/badge/Course-Eurecom_ASI-blue.svg)](https://www.eurecom.fr)
-[![Language](https://img.shields.io/badge/Language-Python_/_LaTeX-green.svg)]()
-[![Framework](https://img.shields.io/badge/Framework-PyTorch_/_JAX-orange.svg)]()
+A reproducibility-oriented academic project exploring predictive uncertainty with deep ensembles on regression, classification and out-of-distribution evaluation tasks.
 
-This repository contains the research paper, implementation code, and course materials for the **ASI (Algorithmic Statistics for Internet)** course at **Eurecom** (Sophia-Antipolis, France). The project focuses on **Uncertainty Quantification in Deep Learning using Deep Ensembles**.
+> **Project status:** academic research project. Claims should be interpreted from the committed report and reproduced experiments, not from the README alone.
 
----
+## Scope
 
-## 📖 Research Overview
-Deep Neural Networks (DNNs) are notoriously overconfident, even when making incorrect predictions. This research investigates **Deep Ensembles** as a practical and robust method for uncertainty estimation, comparing them against traditional Bayesian approaches (like Monte Carlo Dropout and Laplace Approximation) on regression and classification tasks (MNIST & Out-of-Distribution notMNIST).
+The repository studies how independently initialized neural networks can improve predictive uncertainty estimates compared with a single-model baseline. The implementation includes regression experiments and MNIST/notMNIST classification and OOD evaluation.
 
-### Key Highlights
-- **Methodology**: Training multiple neural networks with different random initializations to capture epistemic uncertainty.
-- **Evaluation**: Testing model calibration under dataset shift and out-of-distribution (OOD) scenarios using MNIST vs. notMNIST.
-- **Results**: Deep Ensembles significantly outperform single-model baselines in calibration, accuracy, and robust OOD detection.
+## What is included
 
----
-
-## 📁 Repository Structure
-
-```
-├── main.pdf                         # Main research paper
-├── titre.pdf                        # Title page / Cover page
-├── report.pdf / report.tex          # Project research report
-├── ProjMan_Part3_RevisionSheet.pdf  # Project management revision sheet
-│
-├── code/                            # Implementation source code
-│   ├── uci_regression.py            # UCI dataset regression experiments
-│   ├── plot_uci_boxplots.py         # Visualizing regression metrics
-│   └── mnist_ensemble.py            # Deep Ensembles on MNIST / OOD notMNIST
-│
-├── figures/                         # Generated plots and visualizations
-│   └── data/                        # MNIST & notMNIST evaluation datasets
-│
-└── course/                          # Complete Eurecom ASI Course Materials
-    ├── slides/                      # Weekly course slides (Probability, Regression, GPs, MCMC, VI, etc.)
-    ├── exercises/                   # Weekly exercises and worksheets
-    ├── labs/                        # Jupyter notebooks for hands-on labs
-    ├── tutorials/                   # JAX and Python tutorials
-    └── exam_2025.pdf                # Past exam paper
+```text
+├── code/
+│   ├── uci_regression.py
+│   ├── plot_uci_boxplots.py
+│   └── mnist_ensemble.py
+├── figures/
+├── report.pdf
+├── report.tex
+└── requirements.txt
 ```
 
----
+Course slides, past exams, revision sheets and unrelated teaching material should not be stored in this public project repository.
 
-## 🚀 Getting Started
+## Setup
 
-### Prerequisites
-Ensure you have Python 3.8+ installed with the following packages:
 ```bash
-pip install torch torchvision numpy matplotlib scipy jax jaxlib
+git clone https://github.com/chaoui-ahmed/bayesian-deep-ensembles.git
+cd bayesian-deep-ensembles
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### Running the Experiments
+## Run
 
-1. **UCI Regression Benchmarks**:
-   ```bash
-   python code/uci_regression.py
-   python code/plot_uci_boxplots.py
-   ```
+```bash
+python code/uci_regression.py
+python code/plot_uci_boxplots.py
+python code/mnist_ensemble.py
+```
 
-2. **MNIST Ensemble & OOD Analysis**:
-   ```bash
-   python code/mnist_ensemble.py
-   ```
+## Results policy
 
----
+The README intentionally avoids unsupported statements such as “significantly outperforms” unless the following are visible and reproducible:
 
-## ✍️ Author
-- **Ahmed Chaoui** — Engineering Student at Eurecom (Sophia-Antipolis, France)
+- exact dataset and split;
+- number of ensemble members;
+- random seeds;
+- accuracy or RMSE;
+- negative log-likelihood;
+- calibration metric;
+- OOD metric such as AUROC;
+- baseline comparison;
+- hardware and runtime.
+
+Add a compact results table here once those values are extracted from the final report or regenerated from code.
+
+## Limitations
+
+- Results depend on architecture, optimization and ensemble size.
+- OOD performance depends heavily on the chosen in- and out-of-distribution datasets.
+- Academic experiments are not automatically production-ready uncertainty systems.
+
+## Author
+
+**Ahmed Taha Chaoui** — Engineering student at EURECOM, focused on data science and machine learning.
